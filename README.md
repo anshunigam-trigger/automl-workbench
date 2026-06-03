@@ -37,7 +37,7 @@
 
 > **Telecom Customer Churn Dataset** · 7,043 rows · 19 features · Classification task
 
-![AutoBench Leaderboard](https://i.imgur.com/placeholder.png)
+![AutoBench Leaderboard](https://raw.githubusercontent.com/anshunigam-trigger/automl-workbench/main/leaderboard.png)
 
 *Real accuracy scores from scikit-learn — not hardcoded. Logistic Regression won with **81.55%** accuracy, outperforming XGBoost by **2.13%**.*
 
