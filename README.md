@@ -1,23 +1,29 @@
 <div align="center">
 
-<img src="https://capsule-render.vercel.app/api?type=waving&color=6366F1&height=200&section=header&text=AutoBench&fontSize=80&fontColor=ffffff&animation=fadeIn&fontAlignY=35&desc=No-Code%20AutoML%20Platform&descAlignY=55&descSize=20" width="100%"/>
+<img src="https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=6,11,20&height=180&section=header&text=AutoBench&fontSize=72&fontColor=ffffff&animation=twinkling&fontAlignY=32&desc=No-Code%20AutoML%20Platform&descAlignY=55&descSize=22&descColor=ffffff" width="100%"/>
 
 <br/>
 
-[![Python](https://img.shields.io/badge/Python-3.11-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
-[![Next.js](https://img.shields.io/badge/Next.js-14-000000?style=for-the-badge&logo=next.js&logoColor=white)](https://nextjs.org)
-[![scikit-learn](https://img.shields.io/badge/scikit--learn-latest-F7931E?style=for-the-badge&logo=scikit-learn&logoColor=white)](https://scikit-learn.org)
-[![XGBoost](https://img.shields.io/badge/XGBoost-latest-189AB4?style=for-the-badge&logo=xgboost&logoColor=white)](https://xgboost.readthedocs.io)
+<a href="https://github.com/anshunigam-trigger/automl-workbench">
+  <img src="https://img.shields.io/github/stars/anshunigam-trigger/automl-workbench?style=for-the-badge&logo=github&color=6366F1&labelColor=0F1120" alt="Stars"/>
+</a>
+<a href="https://github.com/anshunigam-trigger/automl-workbench/issues">
+  <img src="https://img.shields.io/github/issues/anshunigam-trigger/automl-workbench?style=for-the-badge&logo=github&color=EF4444&labelColor=0F1120" alt="Issues"/>
+</a>
+<img src="https://img.shields.io/badge/Python-3.11-3776AB?style=for-the-badge&logo=python&logoColor=white&labelColor=0F1120" alt="Python"/>
+<img src="https://img.shields.io/badge/FastAPI-0.100+-009688?style=for-the-badge&logo=fastapi&logoColor=white&labelColor=0F1120" alt="FastAPI"/>
+<img src="https://img.shields.io/badge/Next.js-14-ffffff?style=for-the-badge&logo=next.js&logoColor=white&labelColor=0F1120" alt="Next.js"/>
+<img src="https://img.shields.io/badge/scikit--learn-latest-F7931E?style=for-the-badge&logo=scikit-learn&logoColor=white&labelColor=0F1120" alt="scikit-learn"/>
+<img src="https://img.shields.io/badge/XGBoost-latest-189AB4?style=for-the-badge&logoColor=white&labelColor=0F1120" alt="XGBoost"/>
+<img src="https://img.shields.io/badge/License-MIT-10B981?style=for-the-badge&labelColor=0F1120" alt="License"/>
+
+<br/><br/>
+
+### 🚀 Upload any CSV → Select ML algorithms → Get real accuracy scores. No code required.
 
 <br/>
 
-> **Upload any CSV dataset → select ML algorithms → get real accuracy scores compared side-by-side.**
-> No code. No setup. No waiting.
-
-<br/>
-
-[🚀 Live Demo](#) · [📖 Documentation](#api-documentation) · [🐛 Report Bug](../../issues) · [✨ Request Feature](../../issues)
+[**View Demo**](#-demo) · [**Quick Start**](#-getting-started) · [**API Docs**](#-api-documentation) · [**Report Bug**](../../issues) · [**Request Feature**](../../issues)
 
 <br/>
 
@@ -25,85 +31,157 @@
 
 ---
 
+<div align="center">
+
+## 📸 Demo
+
+> **Telecom Customer Churn Dataset** · 7,043 rows · 19 features · Classification task
+
+![AutoBench Leaderboard](https://i.imgur.com/placeholder.png)
+
+*Real accuracy scores from scikit-learn — not hardcoded. Logistic Regression won with **81.55%** accuracy, outperforming XGBoost by **2.13%**.*
+
+</div>
+
+---
+
 ## 📋 Table of Contents
 
-- [About the Project](#-about-the-project)
-- [Key Features](#-key-features)
-- [Tech Stack](#-tech-stack)
-- [Project Structure](#-project-structure)
-- [Getting Started](#-getting-started)
-- [Supported Algorithms](#-supported-algorithms)
-- [Preprocessing Pipeline](#-preprocessing-pipeline)
-- [API Documentation](#-api-documentation)
-- [How It Works](#-how-it-works)
-- [Roadmap](#-roadmap)
-- [Author](#-author)
+| Section | Description |
+|---|---|
+| [🧠 About](#-about-the-project) | What is AutoBench and why it exists |
+| [✨ Features](#-key-features) | Full list of capabilities |
+| [🛠️ Tech Stack](#️-tech-stack) | Technologies used |
+| [📁 Structure](#-project-structure) | Folder and file organization |
+| [🚀 Getting Started](#-getting-started) | Setup and run locally |
+| [🤖 Algorithms](#-supported-algorithms) | All 12 supported ML models |
+| [⚙️ Pipeline](#️-preprocessing-pipeline) | Auto preprocessing steps |
+| [📡 API](#-api-documentation) | Endpoint reference |
+| [🗺️ Roadmap](#️-roadmap) | What's coming next |
+| [👨‍💻 Author](#-author) | About me |
 
 ---
 
 ## 🧠 About the Project
 
-**AutoBench** is a full-stack AutoML platform that automates the entire machine learning workflow from raw data to a ranked leaderboard — without writing a single line of ML code.
-
-Tools like **H2O.ai**, **DataRobot**, and **PyCaret** solve this problem commercially. AutoBench is an open-source alternative built from scratch with a modern tech stack.
+**AutoBench** is a full-stack AutoML platform that automates the complete machine learning workflow — from raw CSV data to a ranked model leaderboard — without writing a single line of ML code.
 
 ### The Problem
 
-Every ML project has the same repetitive steps:
-- Handle missing values
-- Encode categorical columns
-- Scale numeric features
-- Try 5-6 models
-- Compare their scores
+Every ML project has the same painful, repetitive setup:
 
-This takes hours and produces messy notebooks. AutoBench does all of it in seconds.
+```
+Handle missing values → Encode categoricals → Scale features →
+Try 5-6 models → Tune each one → Compare results
+```
+
+This takes hours and results in messy, unreadable notebooks. **AutoBench does all of it in seconds.**
 
 ### The Solution
 
 ```
-You upload a CSV  →  AutoBench preprocesses it  →  Trains your selected models  →  Shows a real leaderboard
+You upload a CSV
+      ↓
+AutoBench auto-preprocesses it
+      ↓
+Trains your selected models on real data
+      ↓
+Returns a leaderboard with real accuracy scores
 ```
+
+### Why this matters
+
+Tools like **H2O.ai**, **DataRobot**, and **Google AutoML** solve this commercially — charging thousands of dollars. AutoBench is an open-source alternative built from scratch with a modern full-stack architecture.
 
 ---
 
 ## ✨ Key Features
 
-| Feature | Description |
-|---|---|
-| 🗂️ **Smart Upload** | Drag & drop CSV with instant preview table and column detection |
-| 🔧 **Auto Preprocessing** | Missing values, encoding, scaling — all automatic |
-| 🧠 **12 Algorithms** | 6 classifiers + 6 regressors ready to compare |
-| 📊 **Real Leaderboard** | Actual scores from sklearn — not fake or hardcoded |
-| ⚡ **Live Training Log** | Watch models train in real time with animated progress |
-| 🏆 **Smart Insights** | Auto-generated analysis of why the best model won |
-| 📱 **Responsive UI** | Works on desktop and mobile |
-| 🎨 **Dark Theme** | Professional dark UI built from scratch — no UI library |
+<table>
+<tr>
+<td width="50%">
+
+### 🗂️ Smart Upload
+Drag & drop any CSV file with instant column detection, type inference, and data preview table
+
+### 🔧 Auto Preprocessing
+Missing value imputation, categorical encoding, feature scaling — all handled automatically without configuration
+
+### 🧠 12 Algorithms
+6 classification + 6 regression algorithms ready to compare in a single run
+
+</td>
+<td width="50%">
+
+### 📊 Real Leaderboard
+Actual scores computed by scikit-learn on your data — Accuracy, F1, Precision, Recall, R², RMSE
+
+### ⚡ Live Training Log
+Watch models train in real time with an animated terminal-style progress log
+
+### 🏆 Smart Insights
+Auto-generated analysis explaining which model won and by how much
+
+</td>
+</tr>
+</table>
 
 ---
 
 ## 🛠️ Tech Stack
 
-### Frontend
-| Technology | Purpose |
-|---|---|
-| **Next.js 14** | React framework with App Router |
-| **Custom CSS** | Full design system with CSS variables |
-| **JetBrains Mono** | Monospace font for terminal aesthetic |
-| **Plus Jakarta Sans** | Clean sans-serif for body text |
-
-### Backend
-| Technology | Purpose |
-|---|---|
-| **FastAPI** | High-performance Python API framework |
-| **Uvicorn** | ASGI server — like Nodemon for Python |
-| **pandas** | Data manipulation and preprocessing |
-| **scikit-learn** | ML algorithms + preprocessing utilities |
-| **XGBoost** | Gradient boosting — often the top performer |
+<table>
+<tr>
+<th>Layer</th>
+<th>Technology</th>
+<th>Why</th>
+</tr>
+<tr>
+<td><b>Frontend</b></td>
+<td>Next.js 14 · App Router · Custom CSS</td>
+<td>Component-based, file-based routing, production-ready</td>
+</tr>
+<tr>
+<td><b>Backend</b></td>
+<td>FastAPI · Uvicorn · Python 3.11</td>
+<td>Fastest Python framework, async, auto API docs</td>
+</tr>
+<tr>
+<td><b>ML</b></td>
+<td>scikit-learn · XGBoost · pandas</td>
+<td>Industry standard ML libraries</td>
+</tr>
+<tr>
+<td><b>Preprocessing</b></td>
+<td>StandardScaler · LabelEncoder · train_test_split</td>
+<td>Reliable, production-grade sklearn utilities</td>
+</tr>
+<tr>
+<td><b>Design</b></td>
+<td>Custom CSS · JetBrains Mono · Plus Jakarta Sans</td>
+<td>No UI library — full design control</td>
+</tr>
+</table>
 
 ### Architecture
+
 ```
-Next.js (Port 3000)  ──POST /train──▶  FastAPI (Port 8000)  ──▶  scikit-learn
-        ◀──────────── JSON results ──────────────────────────────────────────
+┌─────────────────────────────────────────────────────┐
+│              Next.js (Port 3000)                     │
+│  Upload → Configure → Algorithms → Training → Results│
+└───────────────────┬─────────────────────────────────┘
+                    │ POST /train (multipart/form-data)
+                    ▼
+┌─────────────────────────────────────────────────────┐
+│              FastAPI (Port 8000)                     │
+│  main.py → preprocessor.py → runner.py              │
+└───────────────────┬─────────────────────────────────┘
+                    │
+                    ▼
+┌─────────────────────────────────────────────────────┐
+│              scikit-learn + XGBoost                  │
+│  LR · DT · RF · XGB · KNN · SVM                     │
+└─────────────────────────────────────────────────────┘
 ```
 
 ---
@@ -113,32 +191,35 @@ Next.js (Port 3000)  ──POST /train──▶  FastAPI (Port 8000)  ──▶ 
 ```
 automl-workbench/
 │
-├── 📂 backend/                    # FastAPI Python backend
-│   ├── main.py                    # API routes + CORS config
-│   ├── preprocessor.py            # Auto preprocessing pipeline
-│   ├── runner.py                  # Model training + evaluation loop
-│   └── requirements.txt           # Python dependencies
+├── 📂 backend/                     # FastAPI Python backend
+│   ├── 📄 main.py                  # API routes + CORS middleware
+│   ├── 📄 preprocessor.py          # Auto preprocessing pipeline
+│   ├── 📄 runner.py                # Model training + evaluation loop
+│   └── 📄 requirements.txt         # Python dependencies
 │
-└── 📂 frontend/                   # Next.js frontend
-    ├── 📂 app/
-    │   ├── layout.jsx             # Root layout + metadata
-    │   ├── page.jsx               # Main page — all state management
-    │   └── globals.css            # Full design system CSS
-    │
-    ├── 📂 components/
-    │   ├── Topbar.jsx             # Navigation header
-    │   ├── Stepper.jsx            # Step progress indicator
-    │   └── 📂 steps/
-    │       ├── UploadStep.jsx     # Drag & drop file upload
-    │       ├── ConfigureStep.jsx  # Target column + task type
-    │       ├── AlgorithmsStep.jsx # Algorithm selection cards
-    │       ├── TrainingStep.jsx   # Live training log + progress
-    │       └── ResultsStep.jsx    # Leaderboard + insights
-    │
-    └── 📂 lib/
-        ├── api.js                 # All FastAPI calls in one place
-        ├── constants.js           # Model definitions + step config
-        └── parseCSV.js            # CSV parsing utilities
+├── 📂 frontend/                    # Next.js 14 frontend
+│   ├── 📂 app/
+│   │   ├── 📄 layout.jsx           # Root layout + metadata
+│   │   ├── 📄 page.jsx             # Main page — state orchestration
+│   │   └── 📄 globals.css          # Full design system (CSS variables)
+│   │
+│   ├── 📂 components/
+│   │   ├── 📄 Topbar.jsx           # Navigation header
+│   │   ├── 📄 Stepper.jsx          # Step progress indicator
+│   │   └── 📂 steps/
+│   │       ├── 📄 UploadStep.jsx   # Drag & drop file upload
+│   │       ├── 📄 ConfigureStep.jsx# Target column + task selection
+│   │       ├── 📄 AlgorithmsStep.jsx # Algorithm selection cards
+│   │       ├── 📄 TrainingStep.jsx # Live training log + progress bar
+│   │       └── 📄 ResultsStep.jsx  # Leaderboard + insights
+│   │
+│   └── 📂 lib/
+│       ├── 📄 api.js               # All FastAPI calls centralized
+│       ├── 📄 constants.js         # Model definitions + config
+│       └── 📄 parseCSV.js          # CSV parsing utilities
+│
+├── 📄 .gitignore                   # Excludes venv, node_modules, etc.
+└── 📄 README.md                    # You are here
 ```
 
 ---
@@ -147,33 +228,28 @@ automl-workbench/
 
 ### Prerequisites
 
-Make sure you have these installed:
-
 ```bash
 node --version    # v18 or higher
 python --version  # 3.9 or higher
-git --version     # any recent version
+git --version     # any version
 ```
 
-### 1. Clone the repository
+### 1️⃣ Clone the repository
 
 ```bash
-git clone https://github.com/yourusername/automl-workbench.git
+git clone https://github.com/anshunigam-trigger/automl-workbench.git
 cd automl-workbench
 ```
 
-### 2. Set up the Backend
+### 2️⃣ Start the Backend
 
 ```bash
-# Navigate to backend
 cd backend
 
-# Create virtual environment
+# Create and activate virtual environment
 python -m venv venv
-
-# Activate it
-venv\Scripts\activate      # Windows
-source venv/bin/activate   # Mac / Linux
+venv\Scripts\activate        # Windows
+source venv/bin/activate     # Mac / Linux
 
 # Install dependencies
 pip install -r requirements.txt
@@ -182,31 +258,27 @@ pip install -r requirements.txt
 uvicorn main:app --reload --port 8000
 ```
 
-✅ Backend running at `http://localhost:8000`
-✅ API docs available at `http://localhost:8000/docs`
+> ✅ Backend running at `http://localhost:8000`  
+> ✅ Interactive API docs at `http://localhost:8000/docs`
 
-### 3. Set up the Frontend
+### 3️⃣ Start the Frontend
 
 ```bash
 # Open a new terminal
 cd frontend
-
-# Install dependencies
 npm install
-
-# Start the dev server
 npm run dev
 ```
 
-✅ Frontend running at `http://localhost:3000`
+> ✅ Frontend running at `http://localhost:3000`
 
-### 4. Try it out
+### 4️⃣ Run your first experiment
 
 1. Open `http://localhost:3000`
-2. Upload any `.csv` file
+2. Drop any `.csv` file onto the upload zone
 3. Select your target column
-4. Pick 2-3 algorithms
-5. Click **Run** and watch the leaderboard build
+4. Pick 2–4 algorithms
+5. Click **Run** and watch the leaderboard build in real time
 
 ---
 
@@ -214,62 +286,55 @@ npm run dev
 
 ### Classification
 
-| ID | Algorithm | Best For |
-|---|---|---|
-| `lr` | Logistic Regression | Linear boundaries, fast baseline |
-| `dt` | Decision Tree | Explainable rules, small datasets |
-| `rf` | Random Forest | General purpose, handles noise well |
-| `xgb` | XGBoost | Tabular data, competition winner |
-| `knn` | K-Nearest Neighbors | Small datasets, no training phase |
-| `svm` | Support Vector Machine | High-dimensional data |
+| ID | Algorithm | Complexity | Best For |
+|---|---|---|---|
+| `lr` | Logistic Regression | O(n) | Linear data, fast baseline |
+| `dt` | Decision Tree | O(n log n) | Explainable rules |
+| `rf` | Random Forest | O(n log n · k) | General purpose, handles noise |
+| `xgb` | XGBoost | O(n log n · k) | Tabular data, competitions |
+| `knn` | K-Nearest Neighbors | O(nk) | Small datasets |
+| `svm` | Support Vector Machine | O(n²–n³) | High-dimensional data |
 
 ### Regression
 
-| ID | Algorithm | Best For |
-|---|---|---|
-| `lr` | Linear Regression | Linear relationships, fastest |
-| `ridge` | Ridge Regression | Multicollinearity, L2 regularized |
-| `dt` | Decision Tree | Non-linear patterns |
-| `rf` | Random Forest | Robust, handles outliers |
-| `xgb` | XGBoost | Complex patterns, large datasets |
-| `svr` | Support Vector Regression | Small-medium datasets |
+| ID | Algorithm | Complexity | Best For |
+|---|---|---|---|
+| `lr` | Linear Regression | O(n) | Linear relationships |
+| `ridge` | Ridge Regression | O(n) | Multicollinearity, L2 |
+| `dt` | Decision Tree | O(n log n) | Non-linear patterns |
+| `rf` | Random Forest | O(n log n · k) | Robust, handles outliers |
+| `xgb` | XGBoost | O(n log n · k) | Complex patterns |
+| `svr` | Support Vector Regression | O(n²–n³) | Small-medium datasets |
 
 ---
 
 ## ⚙️ Preprocessing Pipeline
 
-Every dataset goes through this pipeline **automatically** before any model sees it:
+Every uploaded dataset passes through this pipeline **automatically** before any model sees it:
 
 ```
-📂 Raw CSV uploaded
-        │
-        ▼
-🗑️  Drop ID columns
-    (columns where every value is unique — useless for ML)
-        │
-        ▼
-🔧  Fix whitespace → NaN
-    (empty strings like " " converted to proper null values)
-        │
-        ▼
-📊  Impute missing values
-    ├── Numeric columns  → fill with MEDIAN (resistant to outliers)
-    └── Categorical cols → fill with MODE (most frequent value)
-        │
-        ▼
-🏷️  Encode categorical features
-    (text like "Male"/"Female" → numbers like 0/1)
-        │
-        ▼
-📐  Normalize numeric features
-    (StandardScaler → mean=0, std=1 — fair comparison between features)
-        │
-        ▼
-✂️  Train / Test split
-    (80% training · 20% testing · stratified for classification)
-        │
-        ▼
-🚀  Ready for ML models
+📂 Raw CSV
+    │
+    ├─ 🗑️  Drop ID columns
+    │       Any column where every value is unique is useless for ML
+    │
+    ├─ 🔧  Fix whitespace → NaN
+    │       Empty strings like " " become proper null values
+    │
+    ├─ 📊  Impute missing values
+    │       Numeric  → MEDIAN  (resistant to outliers)
+    │       Categorical → MODE (most frequent value)
+    │
+    ├─ 🏷️  Encode categorical features
+    │       "Male"/"Female" → 0/1  (LabelEncoder)
+    │
+    ├─ 📐  Normalize numeric features
+    │       StandardScaler → mean=0, std=1
+    │       (ensures no feature dominates due to scale)
+    │
+    └─ ✂️  Train / Test split
+            80% training · 20% testing
+            Stratified for classification tasks
 ```
 
 ---
@@ -281,231 +346,153 @@ Every dataset goes through this pipeline **automatically** before any model sees
 http://localhost:8000
 ```
 
-### Endpoints
-
-#### `GET /`
-Health check — verify the backend is running.
+### `GET /`
+Health check.
 
 **Response:**
 ```json
-{
-  "message": "AutoML backend is running"
-}
+{ "message": "AutoML backend is running" }
 ```
 
 ---
 
-#### `POST /train`
-Upload a dataset and train selected models. Returns a real accuracy leaderboard.
+### `POST /train`
+Train selected models on uploaded dataset. Returns a ranked leaderboard.
 
-**Request** — `multipart/form-data`
+**Request** · `multipart/form-data`
 
-| Field | Type | Required | Description |
+| Field | Type | Required | Example |
 |---|---|---|---|
-| `file` | `.csv` file | ✅ | Dataset to train on |
-| `target` | `string` | ✅ | Column name to predict |
-| `task` | `string` | ✅ | `classification` or `regression` |
-| `models` | JSON string | ✅ | e.g. `["lr","rf","xgb"]` |
+| `file` | `.csv` file | ✅ | `telecom.csv` |
+| `target` | `string` | ✅ | `"Churn"` |
+| `task` | `string` | ✅ | `"classification"` |
+| `models` | JSON string | ✅ | `["lr","rf","xgb"]` |
 
-**Response — Classification:**
+**Response · Classification**
 ```json
 {
   "results": [
-    {
-      "id": "lr",
-      "accuracy": 0.8155,
-      "f1": 0.8106,
-      "precision": 0.8086,
-      "recall": 0.8155,
-      "time": 0.02
-    },
-    {
-      "id": "xgb",
-      "accuracy": 0.7942,
-      "f1": 0.7871,
-      "precision": 0.7844,
-      "recall": 0.7942,
-      "time": 2.25
-    }
+    { "id": "lr",  "accuracy": 0.8155, "f1": 0.8106, "precision": 0.8086, "recall": 0.8155, "time": 0.02 },
+    { "id": "xgb", "accuracy": 0.7942, "f1": 0.7871, "precision": 0.7844, "recall": 0.7942, "time": 3.68 },
+    { "id": "rf",  "accuracy": 0.7899, "f1": 0.7776, "precision": 0.7764, "recall": 0.7899, "time": 3.0  }
   ],
   "rows": 7043,
   "features": ["gender", "tenure", "MonthlyCharges", "TotalCharges"]
 }
 ```
 
-**Response — Regression:**
+**Response · Regression**
 ```json
 {
   "results": [
-    {
-      "id": "rf",
-      "r2": 0.8923,
-      "rmse": 4.231,
-      "mae": 3.102,
-      "time": 0.88
-    }
+    { "id": "rf", "r2": 0.8923, "rmse": 4.231, "mae": 3.102, "time": 0.88 }
   ],
   "rows": 1000,
   "features": ["feature1", "feature2"]
 }
 ```
 
-**Error Response:**
-```json
-{
-  "detail": "Column 'target' not found in dataset"
-}
-```
-
----
-
-## 🔄 How It Works
-
-### Frontend Flow
-
-```
-User uploads CSV
-      │
-      ▼
-JavaScript reads headers client-side (no server needed)
-      │
-      ▼
-User selects target column + task type
-      │
-      ▼
-User selects algorithms
-      │
-      ▼
-fetch() → POST /train → FastAPI
-      │
-      ▼
-Display leaderboard from real scores
-```
-
-### Backend Flow
-
-```python
-# 1. Receive file + config
-contents = await file.read()
-df = pd.read_csv(io.BytesIO(contents))
-
-# 2. Preprocess
-X_train, X_test, y_train, y_test = preprocess(df, target)
-
-# 3. Train each model and measure
-for model_id in selected_models:
-    model.fit(X_train, y_train)
-    preds = model.predict(X_test)
-    accuracy = accuracy_score(y_test, preds)
-
-# 4. Return sorted leaderboard
-return sorted(results, key=lambda x: x["accuracy"], reverse=True)
-```
-
 ---
 
 ## 🗺️ Roadmap
 
-### ✅ Phase 1 — Core AutoML (Complete)
-- [x] CSV upload with drag & drop
-- [x] Auto preprocessing pipeline
-- [x] Multi-model training + comparison
-- [x] Real leaderboard with metrics
-- [x] Classification + Regression support
-- [x] Professional Next.js frontend
+```
+✅ Phase 1 — Core AutoML
+   ✅ CSV upload with drag & drop
+   ✅ Auto preprocessing pipeline
+   ✅ 12 algorithm comparison
+   ✅ Real leaderboard with metrics
+   ✅ Professional Next.js frontend
+   ✅ Component-based architecture
 
-### 🔄 Phase 2 — Data Intelligence (In Progress)
-- [ ] Data profiling report per column
-- [ ] Feature correlation heatmap
-- [ ] Class imbalance detection + SMOTE
-- [ ] Outlier detection visualization
-- [ ] Distribution plots per feature
-- [ ] Auto feature suggestions
+🔄 Phase 2 — Data Intelligence (in progress)
+   ⬜ Data profiling report per column
+   ⬜ Feature correlation heatmap
+   ⬜ Class imbalance detection + SMOTE
+   ⬜ Outlier detection visualization
+   ⬜ Distribution plots per feature
 
-### 📋 Phase 3 — Advanced ML
-- [ ] Feature importance chart
-- [ ] Confusion matrix visualization
-- [ ] ROC / AUC curve comparison
-- [ ] Hyperparameter tuning (Optuna)
-- [ ] K-Fold cross validation
-- [ ] Model explainability (SHAP values)
-- [ ] Download trained model (.pkl)
-- [ ] Predict on new data
+📋 Phase 3 — Advanced ML
+   ⬜ Feature importance chart
+   ⬜ Confusion matrix visualization
+   ⬜ ROC / AUC curve comparison
+   ⬜ Hyperparameter tuning (Optuna)
+   ⬜ K-Fold cross validation
+   ⬜ SHAP model explainability
+   ⬜ Download trained model (.pkl)
 
-### 🏗️ Phase 4 — Platform Features
-- [ ] Experiment history (SQLite)
-- [ ] Dataset management page
-- [ ] Model registry page
-- [ ] Export results as CSV / PDF
-- [ ] Compare experiments side by side
-- [ ] Working navbar pages
+🏗️ Phase 4 — Platform
+   ⬜ Experiment history (SQLite)
+   ⬜ Dataset management page
+   ⬜ Model registry
+   ⬜ Export results as CSV / PDF
 
-### 🚀 Phase 5 — Production
-- [ ] User authentication (NextAuth.js)
-- [ ] PostgreSQL database
-- [ ] Background training jobs (Celery + Redis)
-- [ ] Real-time WebSocket updates
-- [ ] REST prediction API
-- [ ] Docker containerization
-- [ ] Deploy on Render + Vercel
+🚀 Phase 5 — Production
+   ⬜ User authentication (NextAuth.js)
+   ⬜ PostgreSQL + SQLAlchemy
+   ⬜ Background jobs (Celery + Redis)
+   ⬜ Docker containerization
+   ⬜ Deploy on Render + Vercel
+```
 
 ---
 
 ## 🤝 Contributing
 
-Contributions are welcome. Here's how:
+Contributions are welcome.
 
 ```bash
-# Fork the repo
-# Create your feature branch
-git checkout -b feature/AmazingFeature
+# Fork → Clone → Branch
+git checkout -b feature/your-feature
 
-# Commit your changes
-git commit -m "feat: add AmazingFeature"
+# Make changes → Commit
+git commit -m "feat: your feature description"
 
-# Push to the branch
-git push origin feature/AmazingFeature
-
-# Open a Pull Request
+# Push → Pull Request
+git push origin feature/your-feature
 ```
 
 ### Commit Convention
-
 ```
 feat:     new feature
 fix:      bug fix
 docs:     documentation only
+refactor: code restructure
 style:    formatting, no logic change
-refactor: code restructure, no feature change
 ```
 
 ---
 
 ## 📄 License
 
-Distributed under the MIT License. See `LICENSE` for more information.
+Distributed under the **MIT License**. See `LICENSE` for more information.
 
 ---
+
+<div align="center">
 
 ## 👨‍💻 Author
 
-<div align="center">
+<img src="https://github.com/anshunigam-trigger.png" width="100" style="border-radius: 50%"/>
 
-**Anshu**
+### Anshu Nigam
 
-B.Tech CSE (IoT Specialization) · IEM Kolkata · Batch 2024–2028
+**B.Tech CSE (IoT Specialization)**  
+IEM Kolkata · Batch 2024–2028
 
-[![GitHub](https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white)](https://github.com/yourusername)
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)](https://linkedin.com/in/yourusername)
+*Building at the intersection of AI/ML and Full-Stack Development*
 
-</div>
+<br/>
 
----
+[![GitHub](https://img.shields.io/badge/GitHub-anshunigam--trigger-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/anshunigam-trigger)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Anshu%20Nigam-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/anshu-nigam/)
 
-<div align="center">
+<br/>
 
-<img src="https://capsule-render.vercel.app/api?type=waving&color=6366F1&height=100&section=footer" width="100%"/>
+**If this project helped you, please consider giving it a ⭐**
 
-⭐ **Star this repo if you found it useful!**
+<br/>
+
+<img src="https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=6,11,20&height=100&section=footer" width="100%"/>
 
 </div>
