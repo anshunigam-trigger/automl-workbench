@@ -1,20 +1,34 @@
 'use client'
 
-const NAV_ITEMS = ['Experiments', 'Datasets', 'Models', 'Reports']
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+
+const NAV = [
+  { label: 'Experiments', href: '/'         },
+  { label: 'Datasets',    href: '/datasets'  },
+  { label: 'Models',      href: '/models'    },
+  { label: 'Reports',     href: '/reports'   },
+]
 
 export default function Topbar() {
+  const pathname = usePathname()
+
   return (
     <header className="topbar">
-      <div className="brand">
+      <Link href="/" className="brand">
         <div className="brand-icon">A</div>
         <div className="brand-name">Auto<span>Bench</span></div>
-      </div>
+      </Link>
 
       <nav className="topnav">
-        {NAV_ITEMS.map((item, i) => (
-          <button key={item} className={`nav-item${i === 0 ? ' active' : ''}`}>
-            {item}
-          </button>
+        {NAV.map(item => (
+          <Link
+            key={item.href}
+            href={item.href}
+            className={`nav-item${pathname === item.href ? ' active' : ''}`}
+          >
+            {item.label}
+          </Link>
         ))}
       </nav>
 
