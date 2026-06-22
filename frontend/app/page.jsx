@@ -1,8 +1,6 @@
 'use client'
 
 import { useState }        from 'react'
-import Topbar              from '@/components/Topbar'
-import NeuralBackground    from '@/components/NeuralBackground'
 import Stepper             from '@/components/Stepper'
 import UploadStep          from '@/components/steps/UploadStep'
 import ConfigureStep       from '@/components/steps/ConfigureStep'
@@ -85,9 +83,8 @@ export default function HomePage() {
 
   return (
     <>
-      <NeuralBackground />
       <div className="shell">
-        <Topbar />
+
         <div className="page-content">
 
           {/* Hero header */}
