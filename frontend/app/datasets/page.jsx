@@ -1,9 +1,8 @@
 'use client'
 
-import { useState }     from 'react'
-import Link             from 'next/link'
-import Topbar           from '@/components/Topbar'
-import NeuralBackground from '@/components/NeuralBackground'
+import { useState, useEffect } from 'react'
+import Link from 'next/link'
+import SkeletonCard from '@/components/SkeletonCard'
 
 const DATASETS = [
   { name:'telecom_churn.csv',  rows:7043,  cols:21, numeric:8,  categorical:13, task:'Classification', target:'Churn',     uploaded:'2 hrs ago',  experiments:3, bestScore:'81.55%', size:'1.2 MB', color:'#38BDF8' },
@@ -34,14 +33,12 @@ const CSS = `
     box-shadow: 0 16px 48px rgba(0,0,0,.4), 0 0 0 1px var(--c)22;
   }
 
-  /* top gradient bar */
   .ds-card::before {
     content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
     background: var(--c); opacity: .6; transition: opacity .25s;
   }
   .ds-card:hover::before { opacity: 1; }
 
-  /* glow radial on hover */
   .ds-card::after {
     content: ''; position: absolute; inset: 0;
     background: radial-gradient(circle at top right, var(--c)12, transparent 60%);
@@ -49,7 +46,6 @@ const CSS = `
   }
   .ds-card:hover::after { opacity: 1; }
 
-  /* stagger */
   .ds-card:nth-child(1){animation-delay:.04s}
   .ds-card:nth-child(2){animation-delay:.08s}
   .ds-card:nth-child(3){animation-delay:.12s}
@@ -144,16 +140,49 @@ const CSS = `
   .filter-btn:hover { border-color: var(--border2); color: var(--text); }
   .filter-btn.on { border-color: #38BDF866; color: #38BDF8; background: #38BDF810; }
 
-  /* ── Empty state ── */
+  /* ── Empty state — small (search/filter found nothing) ── */
   .empty { text-align: center; padding: 64px 0; color: var(--text3); }
   .empty-icon { font-size: 44px; margin-bottom: 14px; }
   .empty-title { font-size: 15px; font-weight: 500; color: var(--text2); margin-bottom: 6px; }
   .empty-sub { font-size: 13px; }
+
+  /* ── Empty state — large (zero datasets ever) ── */
+  .empty-state-large {
+    text-align: center;
+    padding: 80px 32px;
+    border: 1.5px dashed var(--border2);
+    border-radius: 14px;
+  }
+  .empty-state-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+    animation: float 3s ease-in-out infinite;
+  }
+  .empty-state-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 8px;
+  }
+  .empty-state-sub {
+    font-size: 13px;
+    color: var(--text2);
+    max-width: 320px;
+    margin: 0 auto;
+    line-height: 1.6;
+  }
 `
 
 export default function DatasetsPage() {
-  const [filter, setFilter] = useState('All')
-  const [search, setSearch] = useState('')
+  const [filter, setFilter]   = useState('All')
+  const [search, setSearch]   = useState('')
+  const [loading, setLoading] = useState(true)
+
+  // Simulates a real database fetch — replace with actual API call in Phase 5
+  useEffect(() => {
+    const timer = setTimeout(() => setLoading(false), 1500)
+    return () => clearTimeout(timer)
+  }, [])
 
   const list = DATASETS.filter(d => {
     const mf = filter === 'All' || d.task === filter
@@ -162,113 +191,146 @@ export default function DatasetsPage() {
   })
 
   return (
-    <>
-      <NeuralBackground />
-      <div className="shell">
-        <style>{CSS}</style>
-        <Topbar />
-        <div className="page-content">
+    <div className="page-content">
+      <style>{CSS}</style>
 
-          {/* Header */}
-          <div className="page-header fade-up">
-            <div className="breadcrumb">Datasets</div>
-            <div className="page-title"><span className="grad">Datasets</span></div>
-            <div className="page-sub">Manage your uploaded datasets and launch new experiments.</div>
+      {/* Header */}
+      <div className="page-header fade-up">
+        <div className="breadcrumb">Datasets</div>
+        <div className="page-title"><span className="grad">Datasets</span></div>
+        <div className="page-sub">Manage your uploaded datasets and launch new experiments.</div>
+      </div>
+
+      {/* Stats */}
+      <div className="stats-bar fade-up-1">
+        <div className="stat-box">
+          <div className="stat-val">{DATASETS.length}</div>
+          <div className="stat-lbl">Datasets</div>
+        </div>
+        <div className="stat-box">
+          <div className="stat-val">{DATASETS.reduce((a, d) => a + d.experiments, 0)}</div>
+          <div className="stat-lbl">Experiments</div>
+        </div>
+        <div className="stat-box">
+          <div className="stat-val">{DATASETS.reduce((a, d) => a + d.rows, 0).toLocaleString()}</div>
+          <div className="stat-lbl">Total rows</div>
+        </div>
+        <div className="stat-box">
+          <div className="stat-val" style={{ color: '#2DD4BF' }}>
+            {DATASETS.length > 0 ? '96.67%' : '—'}
           </div>
-
-          {/* Stats */}
-          <div className="stats-bar fade-up-1">
-            <div className="stat-box"><div className="stat-val">{DATASETS.length}</div><div className="stat-lbl">Datasets</div></div>
-            <div className="stat-box"><div className="stat-val">{DATASETS.reduce((a,d)=>a+d.experiments,0)}</div><div className="stat-lbl">Experiments</div></div>
-            <div className="stat-box"><div className="stat-val">{DATASETS.reduce((a,d)=>a+d.rows,0).toLocaleString()}</div><div className="stat-lbl">Total rows</div></div>
-            <div className="stat-box"><div className="stat-val" style={{color:'#2DD4BF'}}>96.67%</div><div className="stat-lbl">Best accuracy</div></div>
-          </div>
-
-          {/* Upload zone */}
-          <div className="upload-zone fade-up-2" onClick={()=>{}}>
-            <div className="upload-zone-inner">
-              <div className="upload-zone-icon">⬆️</div>
-              <div>
-                <div className="upload-zone-title">Upload a new dataset</div>
-                <div className="upload-zone-sub">Drag & drop a CSV · Any size · Auto-preprocessed</div>
-              </div>
-              <Link href="/" className="btn primary" style={{marginLeft:'auto',whiteSpace:'nowrap'}}>
-                + New Experiment
-              </Link>
-            </div>
-          </div>
-
-          {/* Search + filter */}
-          <div className="search-row fade-up-3">
-            <input
-              className="search-input"
-              placeholder="🔍   Search datasets..."
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-            />
-            {['All','Classification','Regression'].map(f => (
-              <button key={f} className={`filter-btn${filter===f?' on':''}`} onClick={() => setFilter(f)}>
-                {f}
-              </button>
-            ))}
-          </div>
-
-          {/* Cards */}
-          {list.length > 0 ? (
-            <div className="ds-grid fade-up-4">
-              {list.map((d, i) => (
-                <div key={i} className="ds-card" style={{'--c': d.color}}>
-                  <div className="ds-icon">📊</div>
-                  <div className="ds-name">{d.name}</div>
-                  <div className="ds-target">target → <b>{d.target}</b></div>
-
-                  <div className="ds-stats">
-                    <div className="ds-stat">
-                      <div className="ds-stat-val">{d.rows.toLocaleString()}</div>
-                      <div className="ds-stat-lbl">Rows</div>
-                    </div>
-                    <div className="ds-stat">
-                      <div className="ds-stat-val">{d.cols}</div>
-                      <div className="ds-stat-lbl">Columns</div>
-                    </div>
-                  </div>
-
-                  <div className="ds-col-bar">
-                    <div className="ds-col-bar-label">
-                      <span># {d.numeric} numeric</span>
-                      <span>Aa {d.categorical} categorical</span>
-                    </div>
-                    <div className="ds-col-bar-track">
-                      <div className="ds-col-bar-num" style={{width:`${d.numeric/d.cols*100}%`}}/>
-                      <div className="ds-col-bar-cat" style={{width:`${d.categorical/d.cols*100}%`}}/>
-                    </div>
-                  </div>
-
-                  <div className="ds-footer">
-                    <span className={`ds-task ${d.task==='Classification'?'cls':'reg'}`}>{d.task}</span>
-                    <Link href="/" className="ds-use">Use →</Link>
-                  </div>
-
-                  <div className="ds-meta">
-                    <span>{d.uploaded} · {d.size}</span>
-                    {d.experiments > 0
-                      ? <span>{d.experiments} runs · best <span className="ds-meta-score">{d.bestScore}</span></span>
-                      : <span style={{color:'var(--text3)'}}>No runs yet</span>
-                    }
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="empty">
-              <div className="empty-icon">🔍</div>
-              <div className="empty-title">No datasets found</div>
-              <div className="empty-sub">Try a different search term or filter</div>
-            </div>
-          )}
-
+          <div className="stat-lbl">Best accuracy</div>
         </div>
       </div>
-    </>
+
+      {/* Upload zone */}
+      <div className="upload-zone fade-up-2" onClick={() => {}}>
+        <div className="upload-zone-inner">
+          <div className="upload-zone-icon">⬆️</div>
+          <div>
+            <div className="upload-zone-title">
+              {DATASETS.length === 0 ? 'Upload your first dataset' : 'Upload a new dataset'}
+            </div>
+            <div className="upload-zone-sub">Drag & drop a CSV · Any size · Auto-preprocessed</div>
+          </div>
+          <Link href="/" className="btn primary" style={{ marginLeft: 'auto', whiteSpace: 'nowrap' }}>
+            + New Experiment
+          </Link>
+        </div>
+      </div>
+
+      {/* Search + filter — only useful once there's data to search through */}
+      {!loading && DATASETS.length > 0 && (
+        <div className="search-row fade-up-3">
+          <input
+            className="search-input"
+            placeholder="🔍   Search datasets..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+          />
+          {['All', 'Classification', 'Regression'].map(f => (
+            <button key={f} className={`filter-btn${filter === f ? ' on' : ''}`} onClick={() => setFilter(f)}>
+              {f}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Cards / Skeletons / Empty states — four possible outcomes */}
+      {loading ? (
+        /* Case 0 — still "fetching" — show skeleton placeholders */
+        <div className="ds-grid">
+          <SkeletonCard />
+          <SkeletonCard />
+          <SkeletonCard />
+        </div>
+      ) : DATASETS.length === 0 ? (
+        /* Case B — brand new user, zero datasets ever uploaded */
+        <div className="empty-state-large fade-up-4">
+          <div className="empty-state-icon">📂</div>
+          <div className="empty-state-title">No datasets yet</div>
+          <div className="empty-state-sub">
+            Upload your first CSV to start training models and comparing results.
+          </div>
+          <Link href="/" className="btn primary" style={{ marginTop: 16 }}>
+            + Upload your first dataset
+          </Link>
+        </div>
+      ) : list.length === 0 ? (
+        /* Case A — has datasets, but search/filter found nothing */
+        <div className="empty fade-up-4">
+          <div className="empty-icon">🔍</div>
+          <div className="empty-title">No datasets found</div>
+          <div className="empty-sub">Try a different search term or filter</div>
+        </div>
+      ) : (
+        /* Normal case — render the dataset cards */
+        <div className="ds-grid fade-up-4">
+          {list.map((d, i) => (
+            <div key={i} className="ds-card" style={{ '--c': d.color }}>
+              <div className="ds-icon">📊</div>
+              <div className="ds-name">{d.name}</div>
+              <div className="ds-target">target → <b>{d.target}</b></div>
+
+              <div className="ds-stats">
+                <div className="ds-stat">
+                  <div className="ds-stat-val">{d.rows.toLocaleString()}</div>
+                  <div className="ds-stat-lbl">Rows</div>
+                </div>
+                <div className="ds-stat">
+                  <div className="ds-stat-val">{d.cols}</div>
+                  <div className="ds-stat-lbl">Columns</div>
+                </div>
+              </div>
+
+              <div className="ds-col-bar">
+                <div className="ds-col-bar-label">
+                  <span># {d.numeric} numeric</span>
+                  <span>Aa {d.categorical} categorical</span>
+                </div>
+                <div className="ds-col-bar-track">
+                  <div className="ds-col-bar-num" style={{ width: `${d.numeric / d.cols * 100}%` }} />
+                  <div className="ds-col-bar-cat" style={{ width: `${d.categorical / d.cols * 100}%` }} />
+                </div>
+              </div>
+
+              <div className="ds-footer">
+                <span className={`ds-task ${d.task === 'Classification' ? 'cls' : 'reg'}`}>{d.task}</span>
+                <Link href="/" className="ds-use">Use →</Link>
+              </div>
+
+              <div className="ds-meta">
+                <span>{d.uploaded} · {d.size}</span>
+                {d.experiments > 0
+                  ? <span>{d.experiments} runs · best <span className="ds-meta-score">{d.bestScore}</span></span>
+                  : <span style={{ color: 'var(--text3)' }}>No runs yet</span>
+                }
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+    </div>
   )
 }
