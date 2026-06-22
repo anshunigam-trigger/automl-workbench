@@ -1,4 +1,6 @@
 import './globals.css'
+import Sidebar from '@/components/Sidebar'
+import NeuralBackground from '@/components/NeuralBackground'
 
 export const metadata = {
   title: 'AutoBench — No-Code AutoML Platform',
@@ -8,7 +10,15 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <NeuralBackground />
+        <div className="app-shell">
+          <Sidebar />
+          <main className="main-content">
+            {children}
+          </main>
+        </div>
+      </body>
     </html>
   )
 }
