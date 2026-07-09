@@ -198,9 +198,7 @@ body {
 .sidebar-user-name { font-size: 12px; font-weight: 600; color: var(--text); }
 .sidebar-user-role { font-size: 10px; color: var(--text3); }
 
-@media (max-width: 768px) {
-  .sidebar { display: none; }
-}
+
 
 /* ════════════════════════════════════════
    PAGE HEADER
@@ -537,3 +535,226 @@ select:focus { outline: none; border-color: var(--sky); box-shadow: 0 0 0 3px va
 .skeleton-card .skeleton-bar { height: 4px; margin-bottom: 14px; }
 .skeleton-card .skeleton-footer { display: flex; justify-content: space-between; }
 .skeleton-card .skeleton-pill { width: 80px; height: 18px; border-radius: 99px; }
+
+
+/* ════════════════════════════════════════
+   HAMBURGER BUTTON — animated 3-line icon
+   ════════════════════════════════════════ */
+
+.hamburger-btn {
+  display: none;
+  position: fixed;
+  top: 12px;
+  left: 12px;
+  z-index: 200;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 0;
+  transition: background .2s;
+}
+.hamburger-btn:hover { background: var(--surface2); }
+
+.ham-line {
+  display: block;
+  width: 20px;
+  height: 2px;
+  background: var(--text);
+  border-radius: 2px;
+  transition: transform .25s cubic-bezier(.4,0,.2,1), opacity .2s, width .2s;
+  transform-origin: center;
+}
+
+/* Middle line is slightly shorter — looks more refined */
+.ham-line:nth-child(2) { width: 14px; align-self: flex-start; margin-left: 3px; }
+
+/* Animate to X when open */
+.ham-line:nth-child(1).open { transform: translateY(7px) rotate(45deg); width: 20px; }
+.ham-line:nth-child(2).open { opacity: 0; transform: scaleX(0); }
+.ham-line:nth-child(3).open { transform: translateY(-7px) rotate(-45deg); width: 20px; }
+
+/* ════════════════════════════════════════
+   MOBILE BACKDROP
+   ════════════════════════════════════════ */
+
+.mob-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0);
+  z-index: 98;
+  transition: background .3s;
+  pointer-events: none;
+}
+.mob-backdrop.mob-backdrop-show {
+  background: rgba(0,0,0,.6);
+  backdrop-filter: blur(4px);
+  pointer-events: all;
+}
+
+/* ════════════════════════════════════════
+   CLOSE BUTTON — inside sidebar on mobile
+   ════════════════════════════════════════ */
+
+.sidebar-close-btn {
+  display: none;
+  margin-left: auto;
+  background: none;
+  border: none;
+  color: var(--text2);
+  font-size: 14px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: background .15s, color .15s;
+}
+.sidebar-close-btn:hover { background: var(--surface2); color: var(--text); }
+
+/* ════════════════════════════════════════
+   RESPONSIVE BREAKPOINT
+   ════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+
+  .hamburger-hidden { display: none !important; }
+
+  /* Show hamburger */
+  .hamburger-btn { display: flex; }
+
+  /* Show backdrop */
+  .mob-backdrop { display: block; }
+
+  /* Show close button */
+  .sidebar-close-btn { display: block; }
+
+  /* Stack layout vertically */
+  .app-shell { display: block; }
+
+  .main-content {
+    width: 100%;
+    min-height: 100vh;
+  }
+
+  /* Sidebar slides in from left */
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: -260px;
+    height: 100vh;
+    width: 240px;
+    z-index: 99;
+    transition: left .28s cubic-bezier(.4,0,.2,1),
+                box-shadow .28s ease;
+  }
+
+  /* Sidebar open state */
+  .sidebar.sidebar-open {
+    left: 0;
+    box-shadow: 8px 0 40px rgba(0,0,0,.6);
+  }
+
+  /* Page adjustments */
+  .page-content   { padding: 24px 16px; }
+  .algo-grid      { grid-template-columns: repeat(2,1fr); }
+  .form-2col      { grid-template-columns: 1fr; }
+  .cls-grid,
+  .reg-grid       { grid-template-columns: 2fr 1fr 1fr; }
+  .hide-sm        { display: none !important; }
+  .stats-bar      { flex-wrap: wrap; }
+  .stat-box       { flex: 1; min-width: 120px; }
+
+ 
+}
+
+/* ════════════════════════════════════════
+   EXPERIMENTS PAGE — Hero + Table
+   ════════════════════════════════════════ */
+
+.exp-hero { margin-bottom: 28px; }
+.exp-hero-title {
+  font-size: 38px; font-weight: 700;
+  letter-spacing: -0.02em; line-height: 1.15;
+  color: var(--text); margin-bottom: 10px;
+}
+.exp-hero-sub {
+  font-size: 14px; color: var(--text2);
+  line-height: 1.65; max-width: 520px;
+}
+
+/* Status badges */
+.exp-badge {
+  display: inline-flex; align-items: center;
+  font-family: var(--mono); font-size: 9px;
+  font-weight: 700; padding: 2px 8px;
+  border-radius: 99px; letter-spacing: .06em;
+  text-transform: uppercase;
+}
+.exp-badge-success {
+  background: var(--teal-dim); color: var(--teal);
+  border: 1px solid var(--teal-glow);
+}
+.exp-badge-running {
+  background: var(--sky-dim); color: var(--sky);
+  border: 1px solid var(--sky-glow);
+  animation: pulse 2s ease-in-out infinite;
+}
+.exp-badge-warning {
+  background: #FBBF2415; color: var(--amber);
+  border: 1px solid #FBBF2440;
+}
+@keyframes pulse {
+  0%,100% { opacity: 1; }
+  50%      { opacity: 0.6; }
+}
+
+
+/* ════════════════════════════════════════
+   WORKSPACE SELECTOR — sidebar
+   ════════════════════════════════════════ */
+
+.workspace-selector {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  margin-bottom: 16px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface2);
+  cursor: pointer;
+  transition: all .15s;
+}
+.workspace-selector:hover {
+  border-color: var(--sky-glow);
+  background: var(--surface3);
+}
+.workspace-label {
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  margin-bottom: 2px;
+}
+.workspace-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+  font-family: var(--mono);
+}
+.workspace-chevron {
+  color: var(--text3);
+  font-size: 14px;
+  transition: transform .2s;
+}
+.workspace-selector:hover .workspace-chevron {
+  color: var(--sky);
+  transform: rotate(180deg);
+}
