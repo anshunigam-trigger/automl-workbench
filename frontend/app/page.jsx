@@ -25,6 +25,13 @@ const RECENT = [
   { name: 'Image Classification NLP',  status: 'warning', accuracy: '81.50%', when: '2d ago'    },
 ]
 
+const ACTIVITY = [
+  { icon: '✅', text: 'Model trained: Churn v2',       who: 'You',      when: '10m ago' },
+  { icon: '📤', text: 'Dataset uploaded: fraud_v3.csv', who: 'You',      when: '1h ago'  },
+  { icon: '🚀', text: 'Started EXP-903',                who: 'You',      when: '3h ago'  },
+  { icon: '⬇',  text: 'Downloaded LightGBM model',      who: 'You',      when: 'Yesterday' },
+]
+
 export default function DashboardPage() {
   return (
     <div className="page-content">
@@ -159,6 +166,84 @@ export default function DashboardPage() {
         </div>
 
       </div>
+
+      {/* ── Activity Feed + System Health ── */}
+      <div className="fade-up-4" style={{
+        display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: 14
+      }}>
+
+      {/* Activity Feed */}
+      <div className="card" style={{ marginBottom: 0 }}>
+        <div className="card-header">
+          <div>
+            <div className="card-title">
+              <span className="card-title-icon">🔔</span>
+              Activity Feed
+            </div>
+            <div className="card-sub">Recent actions across your workspace</div>
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          {ACTIVITY.map((a, i) => (
+            <div key={i} style={{
+              display: 'flex', alignItems: 'center', gap: 12,
+              padding: '10px 0', borderBottom: i < ACTIVITY.length - 1 ? '1px solid var(--border)' : 'none'
+            }}>
+              <div style={{
+                width: 32, height: 32, borderRadius: 8,
+                background: 'var(--surface2)', border: '1px solid var(--border)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: 14, flexShrink: 0
+              }}>
+                {a.icon}
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 12, color: 'var(--text)' }}>{a.text}</div>
+              </div>
+              <div style={{ fontSize: 10, color: 'var(--text3)', fontFamily: 'var(--mono)', whiteSpace: 'nowrap' }}>
+                {a.when}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* System Health */}
+      <div className="card" style={{ marginBottom: 0 }}>
+        <div className="card-header">
+          <div>
+            <div className="card-title">
+              <span className="card-title-icon">💚</span>
+              System Health
+            </div>
+            <div className="card-sub">All systems operational</div>
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          {[
+            { label: 'Backend API', status: 'Operational', color: 'var(--teal)' },
+            { label: 'ML Training Engine', status: 'Operational', color: 'var(--teal)' },
+            { label: 'Phase Progress', status: `${STATS.overallProgress}% complete`, color: 'var(--sky)' },
+          ].map((s, i) => (
+            <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <div style={{
+                  width: 7, height: 7, borderRadius: '50%',
+                  background: s.color, boxShadow: `0 0 6px ${s.color}88`
+                }} />
+                <span style={{ fontSize: 12, color: 'var(--text2)' }}>{s.label}</span>
+              </div>
+              <span style={{ fontSize: 11, color: s.color, fontFamily: 'var(--mono)', fontWeight: 600 }}>
+                {s.status}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+    </div>
       
 
     </div>
