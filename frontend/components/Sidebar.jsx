@@ -5,8 +5,8 @@ import { usePathname } from 'next/navigation'
 import { useState, useEffect } from 'react'
 
 const NAV_MAIN = [
-  { label: 'Dashboard',   href: '/dashboard', icon: '◈',  count: null },
-  { label: 'Experiments', href: '/',          icon: '⚗️', count: 5   },
+  { label: 'Dashboard',   href: '/', icon: '◈',  count: null },
+  { label: 'Experiments', href: '/experiments',          icon: '⚗️', count: 5   },
   { label: 'Datasets',    href: '/datasets',  icon: '🗄️', count: 6   },
   { label: 'Models',      href: '/models',    icon: '🧠', count: 12  },
   { label: 'Reports',     href: '/reports',   icon: '📊', count: null },
