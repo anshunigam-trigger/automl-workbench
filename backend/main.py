@@ -70,16 +70,18 @@ async def train(
     if target not in df.columns:
         raise HTTPException(status_code=400, detail=f"Column '{target}' not found in dataset")
 
-    X_train, X_test, y_train, y_test = preprocess(df, target)
-
     try:
         selected_models = json.loads(models)
     except Exception:
         selected_models = ["lr", "rf", "xgb"]
 
-    results = run_models(X_train, X_test, y_train, y_test, selected_models, task)
+    try:
+        X_train, X_test, y_train, y_test = preprocess(df, target, task)
+        results = run_models(X_train, X_test, y_train, y_test, selected_models, task)
+    except ValueError as err:
+        # Becomes a readable error in the UI instead of "Failed to fetch"
+        raise HTTPException(status_code=400, detail=str(err))
 
-    # ── Save to the database ──
     experiment = Experiment(
         dataset_name=file.filename,
         target_column=target,
@@ -87,7 +89,7 @@ async def train(
         rows=len(df),
     )
     db.add(experiment)
-    db.flush()   # sends the INSERT now, so experiment.id exists
+    db.flush()
 
     for r in results:
         db.add(ModelResult(
