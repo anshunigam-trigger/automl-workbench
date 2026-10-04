@@ -7,14 +7,9 @@ import {
 } from 'recharts'
 import Stat from '@/components/Stat'
 import { useExperiments } from '@/lib/useExperiments'
-import { timeAgo, modelName, pct, rowScore, seconds } from '@/lib/format'
+import { timeAgo, modelName, pct, rowScore, seconds, TASK_STYLE } from '@/lib/format'
 
 const PER_PAGE = 8
-
-const TASK_STYLE = {
-  classification: { label: 'Classification', color: 'var(--sky)',  bg: 'var(--sky-dim)',  border: 'var(--sky-glow)'  },
-  regression:     { label: 'Regression',     color: 'var(--teal)', bg: 'var(--teal-dim)', border: 'var(--teal-glow)' },
-}
 
 const pill = active => ({
   padding: '7px 12px', borderRadius: 7, fontSize: 11, fontWeight: 500, cursor: 'pointer',

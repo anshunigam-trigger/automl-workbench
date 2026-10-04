@@ -33,3 +33,8 @@ export const rowScore = (task, score) =>
 
 // 0.03 → "0.03s"
 export const seconds = v => (v == null ? '—' : `${v}s`)
+
+export const TASK_STYLE = {
+  classification: { label: 'Classification', color: 'var(--sky)',  bg: 'var(--sky-dim)',  border: 'var(--sky-glow)'  },
+  regression:     { label: 'Regression',     color: 'var(--teal)', bg: 'var(--teal-dim)', border: 'var(--teal-glow)' },
+}
