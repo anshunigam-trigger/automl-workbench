@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useExperiments } from '@/lib/useExperiments'
 import { checkHealth } from '@/lib/api'
 import { timeAgo, formatScore, modelName } from '@/lib/format'
+import Stat from '@/components/Stat'
 
 function Stat({ label, value, color, loading }) {
   return (

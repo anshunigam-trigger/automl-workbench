@@ -11,8 +11,7 @@ export function timeAgo(isoString) {
   return `${Math.floor(hours / 24)}d ago`
 }
 
-// Backend stores accuracy as a fraction (0.8155) → show "81.55%"
-// Regression has no accuracy, so show R² instead.
+// Best result of an experiment → "81.55%" or "R² 0.94"
 export function formatScore(best, task) {
   if (!best) return '—'
   if (task === 'classification') return `${(best.accuracy * 100).toFixed(2)}%`
@@ -24,3 +23,13 @@ export function modelName(id, task) {
   const list = task === 'classification' ? CLS_MODELS : REG_MODELS
   return list.find(m => m.id === id)?.name ?? id
 }
+
+// 0.8155 → "81.55%"   (null-safe)
+export const pct = v => (v == null ? '—' : `${(v * 100).toFixed(2)}%`)
+
+// Score for one model row, depending on the task
+export const rowScore = (task, score) =>
+  score == null ? '—' : task === 'classification' ? pct(score) : `R² ${score.toFixed(2)}`
+
+// 0.03 → "0.03s"
+export const seconds = v => (v == null ? '—' : `${v}s`)
