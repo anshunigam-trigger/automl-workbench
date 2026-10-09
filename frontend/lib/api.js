@@ -25,6 +25,12 @@ export async function trainModels({ file, target, task, models }) {
   return response.json()
 }
 
+export async function fetchExperiments() {
+  const response = await fetch(`${BASE_URL}/experiments`)
+  if (!response.ok) throw new Error(`Server error ${response.status}`)
+  return response.json()
+}
+
 /**
  * Health check — verify FastAPI is running
  * @returns {Promise<boolean>}
