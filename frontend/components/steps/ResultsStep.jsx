@@ -1,12 +1,14 @@
 'use client'
 
 import { CLS_MODELS, REG_MODELS } from '@/lib/constants'
+import { analyzeExperiment } from '@/lib/analyze'
 
 export default function ResultsStep({ results, rows, features, task, target, onRetry, onReset }) {
   const models  = task === 'classification' ? CLS_MODELS : REG_MODELS
   const sortKey = task === 'classification' ? 'accuracy' : 'r2'
   const best    = results[0]
   const second  = results[1]
+  const { insights, weak } = analyzeExperiment({ task, target, results })
 
   const getName = id => models.find(m => m.id === id)?.name ?? id
 
@@ -131,12 +133,14 @@ export default function ResultsStep({ results, rows, features, task, target, onR
 
       {/* Insight */}
       <div className="insight-box">
-        <strong>{getName(best?.id)}</strong> is the best performing algorithm on this dataset
-        with a {sortKey === 'accuracy' ? `accuracy of ${pct(best?.accuracy)}` : `R² of ${pct(best?.r2)}`}.
-        {second && (
-          <> It outperformed <strong>{getName(second?.id)}</strong> by <strong>{diff}</strong>.</>
+              {insights.length > 0 && (
+          <div className="insight-box" style={weak ? { borderColor: 'rgba(251,191,36,.4)' } : undefined}>
+            <strong>What this means</strong>
+            {insights.map((text, i) => (
+              <div key={i} style={{ marginTop: 6 }}>→ {text}</div>
+            ))}
+          </div>
         )}
-        {' '}Consider hyperparameter tuning or feature engineering to improve results further.
       </div>
 
       <div className="btn-row">

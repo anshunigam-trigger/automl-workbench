@@ -38,3 +38,12 @@ export const TASK_STYLE = {
   classification: { label: 'Classification', color: 'var(--sky)',  bg: 'var(--sky-dim)',  border: 'var(--sky-glow)'  },
   regression:     { label: 'Regression',     color: 'var(--teal)', bg: 'var(--teal-dim)', border: 'var(--teal-glow)' },
 }
+
+// 812.4 → "13m 32s"    45.2 → "45.2s"
+export function duration(secs) {
+  if (secs == null) return '—'
+  if (secs < 60) return `${secs.toFixed(1)}s`
+  const m = Math.floor(secs / 60)
+  const s = Math.round(secs % 60)
+  return m < 60 ? `${m}m ${s}s` : `${Math.floor(m / 60)}h ${m % 60}m`
+}

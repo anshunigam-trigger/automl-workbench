@@ -1,10 +1,9 @@
 import './globals.css'
-import Sidebar from '@/components/Sidebar'
 import NeuralBackground from '@/components/NeuralBackground'
 
 export const metadata = {
   title: 'AutoBench — No-Code AutoML Platform',
-  description: 'Upload any CSV, pick ML models, and compare real accuracy scores automatically.',
+  description: 'Upload a CSV, compare machine learning models, and get a ranked leaderboard. No code required.',
 }
 
 export default function RootLayout({ children }) {
@@ -12,12 +11,7 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <body>
         <NeuralBackground />
-        <div className="app-shell">
-          <Sidebar />
-          <main className="main-content">
-            {children}
-          </main>
-        </div>
+        {children}
       </body>
     </html>
   )

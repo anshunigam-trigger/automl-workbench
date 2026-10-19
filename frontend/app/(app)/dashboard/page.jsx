@@ -7,16 +7,7 @@ import { checkHealth } from '@/lib/api'
 import { timeAgo, formatScore, modelName } from '@/lib/format'
 import Stat from '@/components/Stat'
 
-function Stat({ label, value, color, loading }) {
-  return (
-    <div className="stat-box">
-      {loading
-        ? <div className="skeleton" style={{ width: 60, height: 22, marginBottom: 6 }} />
-        : <div className="stat-val" style={color ? { color } : undefined}>{value}</div>}
-      <div className="stat-lbl">{label}</div>
-    </div>
-  )
-}
+
 
 export default function DashboardPage() {
   const { experiments, loading, error } = useExperiments()
