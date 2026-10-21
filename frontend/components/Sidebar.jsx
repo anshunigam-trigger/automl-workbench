@@ -5,17 +5,17 @@ import { usePathname } from 'next/navigation'
 import { useEffect } from 'react'
 
 const NAV_MAIN = [
-  { label: 'Dashboard',   href: '/',            icon: '◈',  count: null },
+  { label: 'Dashboard',   href: '/dashboard',   icon: '◈',  count: null },
   { label: 'Experiments', href: '/experiments', icon: '⚗️', count: 5   },
   { label: 'Datasets',    href: '/datasets',    icon: '🗄️', count: 6   },
   { label: 'Models',      href: '/models',      icon: '🧠', count: 12  },
   { label: 'Reports',     href: '/reports',     icon: '📊', count: null },
+  { label: 'Compare',     href: '/compare',     icon: '⚖️', count: null },
 ]
 
 const NAV_TOOLS = [
   { label: 'AI Advisor', icon: '✨' },
   { label: 'Predict',    icon: '🎯' },
-  { label: 'Compare',    icon: '⚖️' },
 ]
 
 export default function Sidebar({ open, setOpen }) {
