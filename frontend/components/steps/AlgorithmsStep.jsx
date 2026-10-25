@@ -24,7 +24,7 @@ export default function AlgorithmsStep({ task, target, selected, onToggle, onBac
           </div>
           <div className="card-sub">
             {task === 'classification' ? 'Classification' : 'Regression'} · Target:{' '}
-            <b style={{ color: 'var(--primary)' }}>{target}</b>
+            <b style={{ color: 'var(--ab-acc)' }}>{target}</b>
           </div>
         </div>
       </div>

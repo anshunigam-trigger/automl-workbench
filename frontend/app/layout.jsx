@@ -1,5 +1,4 @@
 import './globals.css'
-import NeuralBackground from '@/components/NeuralBackground'
 
 export const metadata = {
   title: 'AutoBench — No-Code AutoML Platform',
@@ -9,10 +8,7 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body>
-        <NeuralBackground />
-        {children}
-      </body>
+      <body>{children}</body>
     </html>
   )
 }

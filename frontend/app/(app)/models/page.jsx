@@ -2,29 +2,21 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-} from 'recharts'
-import Stat from '@/components/Stat'
+import { motion } from 'framer-motion'
+import { Plus, Search } from 'lucide-react'
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import { useExperiments } from '@/lib/useExperiments'
-import { timeAgo, modelName, pct, rowScore, seconds, TASK_STYLE } from '@/lib/format'
+import { timeAgo, modelName, pct, rowScore, seconds } from '@/lib/format'
+import { Page, Card, Tile, Empty, CountUp, ErrorState, list } from '@/components/ui'
 
 const PER_PAGE = 8
-
-const pill = active => ({
-  padding: '7px 12px', borderRadius: 7, fontSize: 11, fontWeight: 500, cursor: 'pointer',
-  fontFamily: 'var(--sans)', textTransform: 'capitalize',
-  border: `1px solid ${active ? 'var(--sky-glow)' : 'var(--border)'}`,
-  background: active ? 'var(--sky-dim)' : 'transparent',
-  color: active ? 'var(--sky)' : 'var(--text2)',
-})
 
 // The four metric boxes in the summary panel depend on the task type
 function metricBoxes(r) {
   if (r.task === 'classification') {
     return [
       { label: 'Accuracy',  value: pct(r.score) },
-      { label: 'F1 Score',  value: pct(r.f1) },
+      { label: 'F1 score',  value: pct(r.f1) },
       { label: 'Precision', value: pct(r.precision) },
       { label: 'Recall',    value: pct(r.recall) },
     ]
@@ -41,16 +33,16 @@ const AlgoTooltip = ({ active, payload }) => {
   if (!active || !payload?.length) return null
   const d = payload[0].payload
   return (
-    <div style={{ background: 'rgba(13,21,38,.97)', border: '1px solid #1E2D45', borderRadius: 8, padding: '8px 12px', fontSize: 11, fontFamily: 'var(--mono)' }}>
-      <div style={{ color: '#F0F6FF', marginBottom: 4 }}>{d.name}</div>
-      <div style={{ color: '#2DD4BF' }}>Avg accuracy: {d.accuracy}%</div>
-      <div style={{ color: '#8BA0BF' }}>{d.runs} run{d.runs === 1 ? '' : 's'}</div>
+    <div className="ab-tip">
+      <b>{d.name}</b>
+      <div>Avg accuracy: {d.accuracy}%</div>
+      <div className="ab-lbl">{d.runs} run{d.runs === 1 ? '' : 's'}</div>
     </div>
   )
 }
 
 export default function ModelsPage() {
-  const { experiments, loading, error } = useExperiments()
+  const { experiments, loading, error, refetch } = useExperiments()
   const [search, setSearch]           = useState('')
   const [task, setTask]               = useState('all')
   const [page, setPage]               = useState(1)
@@ -104,193 +96,147 @@ export default function ModelsPage() {
   const featured   = rows.find(r => r.key === selectedKey) ?? bestRow
 
   return (
-    <div className="page-content">
-
-      {/* Header */}
-      <div className="fade-up" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 16, flexWrap: 'wrap', marginBottom: 24 }}>
-        <div>
-          <div className="breadcrumb">Models</div>
-          <div className="page-title"><span className="grad">Model Registry</span></div>
-          <div className="page-sub">Every model AutoBench has trained for you, with real metrics.</div>
-        </div>
-        <Link href="/experiments" className="btn primary">+ Train Model</Link>
-      </div>
-
-      {error && <div className="error-bar">⚠ &nbsp;{error}</div>}
+    <Page
+      title="Model registry"
+      sub="Every model AutoBench has trained for you, with real metrics."
+      action={<Link href="/experiments" className="ab-btn dark fit"><Plus size={16} /> Train model</Link>}
+    >
+      {error && <ErrorState text={error} onRetry={refetch} />}
 
       {/* KPIs */}
-      <div className="stats-bar fade-up-1">
-        <Stat label="Models Trained" value={rows.length}        loading={loading} />
-        <Stat label="Experiments"    value={experiments.length} loading={loading} />
-        <Stat label="Best Score"     value={bestRow ? rowScore(bestRow.task, bestRow.score) : '—'}
-              sub={bestRow?.name} color="var(--teal)" loading={loading} />
-        <Stat label="Fastest"        value={fastest ? seconds(fastest.time) : '—'}
-              sub={fastest?.name} loading={loading} />
-        <Stat label="Avg Train Time" value={avgTime == null ? '—' : `${avgTime.toFixed(2)}s`} loading={loading} />
-      </div>
+      <motion.div className="ab-kpis" variants={list}>
+        <Tile hot label="Models trained">{loading ? '—' : <CountUp to={rows.length} />}</Tile>
+        <Tile label="Experiments">{loading ? '—' : <CountUp to={experiments.length} />}</Tile>
+        <Tile label="Best score" sub={bestRow?.name}>{loading || !bestRow ? '—' : rowScore(bestRow.task, bestRow.score)}</Tile>
+        <Tile label="Fastest" sub={fastest?.name}>{loading || !fastest ? '—' : seconds(fastest.time)}</Tile>
+        <Tile label="Avg train time">{loading || avgTime == null ? '—' : `${avgTime.toFixed(2)}s`}</Tile>
+      </motion.div>
 
-      {/* Empty state */}
       {!loading && !error && rows.length === 0 && (
-        <div className="card fade-up-2" style={{ textAlign: 'center', padding: '56px 24px', borderStyle: 'dashed' }}>
-          <div style={{ fontSize: 40, marginBottom: 12 }}>🧠</div>
-          <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 6 }}>No models trained yet</div>
-          <div style={{ fontSize: 13, color: 'var(--text2)', marginBottom: 16 }}>
-            Every model you train will be listed here with its metrics.
-          </div>
-          <Link href="/experiments" className="btn primary">+ Train your first model</Link>
-        </div>
+        <Empty title="No models trained yet" text="Every model you train will be listed here with its metrics." href="/experiments" cta="Train your first model" />
       )}
 
       {(loading || rows.length > 0) && (
         <>
-          {/* Chart + best model summary */}
-          <div className="dash-grid fade-up-2">
-
-            <div className="card" style={{ marginBottom: 0 }}>
-              <div className="card-header">
-                <div>
-                  <div className="card-title"><span className="card-title-icon">📊</span>Algorithm Comparison</div>
-                  <div className="card-sub">Average accuracy of each algorithm across all classification experiments</div>
-                </div>
-              </div>
+          {/* Chart + selected model */}
+          <motion.div className="ab-two" variants={list}>
+            <Card>
+              <b className="ab-h">Algorithm comparison</b>
+              <div className="ab-lbl" style={{ marginBottom: 12 }}>Average accuracy of each algorithm across classification experiments</div>
               {loading ? (
-                <div className="skeleton" style={{ height: 180 }} />
+                <div className="ab-skel" style={{ height: 180 }} />
               ) : chartData.length === 0 ? (
-                <div style={{ fontSize: 12, color: 'var(--text3)' }}>Train a classification model to see this chart.</div>
+                <div className="ab-lbl">Train a classification model to see this chart.</div>
               ) : (
                 <ResponsiveContainer width="100%" height={Math.max(180, chartData.length * 44)}>
                   <BarChart data={chartData} layout="vertical" margin={{ top: 0, right: 30, bottom: 0, left: 10 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#1E2D45" horizontal={false} />
-                    <XAxis type="number" domain={[0, 100]} tick={{ fill: '#3D5470', fontSize: 10 }} tickFormatter={v => `${v}%`} />
-                    <YAxis type="category" dataKey="name" width={130} tick={{ fill: '#8BA0BF', fontSize: 10 }} />
-                    <Tooltip content={<AlgoTooltip />} cursor={{ fill: 'rgba(255,255,255,.03)' }} />
-                    <Bar dataKey="accuracy" fill="#38BDF8" radius={[0, 4, 4, 0]} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--ab-line)" horizontal={false} />
+                    <XAxis type="number" domain={[0, 100]} tick={{ fill: 'var(--ab-mut)', fontSize: 11 }} tickFormatter={v => `${v}%`} />
+                    <YAxis type="category" dataKey="name" width={130} tick={{ fill: 'var(--ab-mut)', fontSize: 11 }} />
+                    <Tooltip content={<AlgoTooltip />} cursor={{ fill: 'var(--ab-inset)' }} />
+                    <Bar dataKey="accuracy" fill="var(--ab-acc)" radius={[0, 8, 8, 0]} animationDuration={900} />
                   </BarChart>
                 </ResponsiveContainer>
               )}
-            </div>
+            </Card>
 
-            <div className="card" style={{ marginBottom: 0 }}>
-              <div className="card-header">
+            <Card>
+              <div className="ab-row">
                 <div>
-                  <div className="card-title">
-                    <span className="card-title-icon">⭐</span>
-                    {selectedKey ? 'Selected Model' : 'Best Model'}
-                  </div>
-                  <div className="card-sub">Click any row below to inspect it</div>
+                  <b className="ab-h">{selectedKey ? 'Selected model' : 'Best model'}</b>
+                  <div className="ab-lbl">Click any row below to inspect it</div>
                 </div>
-                {selectedKey && (
-                  <button onClick={() => setSelectedKey(null)}
-                    style={{ background: 'none', border: 'none', color: 'var(--sky)', fontSize: 11, cursor: 'pointer' }}>
-                    Reset
-                  </button>
-                )}
+                {selectedKey && <button className="ab-link" onClick={() => setSelectedKey(null)}>Reset</button>}
               </div>
 
               {loading || !featured ? (
-                <div className="skeleton" style={{ height: 180 }} />
+                <div className="ab-skel" style={{ height: 180 }} />
               ) : (
-                <>
-                  <div style={{ fontSize: 15, fontWeight: 700, fontFamily: 'var(--mono)', color: 'var(--text)', marginBottom: 3 }}>
-                    {featured.name}
-                  </div>
-                  <div style={{ fontSize: 11, color: 'var(--text3)', fontFamily: 'var(--mono)', marginBottom: 14 }}>
-                    {featured.dataset} · {timeAgo(featured.createdAt)}
-                  </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                <motion.div key={featured.key} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
+                  <div style={{ fontSize: 20, fontWeight: 700, marginTop: 14 }}>{featured.name}</div>
+                  <div className="ab-lbl">{featured.dataset} · {timeAgo(featured.createdAt)}</div>
+                  <div className="ab-mini-grid" style={{ gridTemplateColumns: '1fr 1fr' }}>
                     {metricBoxes(featured).map(m => (
-                      <div key={m.label} style={{ background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: 8, padding: '10px 12px' }}>
-                        <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--teal)', fontFamily: 'var(--mono)' }}>{m.value}</div>
-                        <div style={{ fontSize: 10, color: 'var(--text3)', marginTop: 2, textTransform: 'uppercase', letterSpacing: '.06em' }}>{m.label}</div>
-                      </div>
+                      <div key={m.label} className="ab-mini"><small>{m.label}</small><b>{m.value}</b></div>
                     ))}
                   </div>
-                  <div style={{ fontSize: 11, color: 'var(--text2)', marginTop: 12 }}>
-                    Trained in <b style={{ color: 'var(--text)' }}>{seconds(featured.time)}</b>
-                    {featured.isWinner && ' · 🏆 won its experiment'}
+                  <div className="ab-lbl">
+                    Trained in <b style={{ color: 'var(--ab-ink)' }}>{seconds(featured.time)}</b>
+                    {featured.isWinner && ' · won its experiment'}
                   </div>
-                </>
+                </motion.div>
               )}
-            </div>
-          </div>
+            </Card>
+          </motion.div>
 
-          {/* Inventory table */}
-          <div className="card fade-up-3">
-            <div className="card-header" style={{ flexWrap: 'wrap', gap: 12 }}>
+          {/* Inventory */}
+          <Card inView>
+            <div className="ab-row">
               <div>
-                <div className="card-title"><span className="card-title-icon">🗂️</span>Model Inventory</div>
-                <div className="card-sub">{filtered.length} of {rows.length} models</div>
+                <b className="ab-h">Model inventory</b>
+                <div className="ab-lbl">{filtered.length} of {rows.length} models</div>
               </div>
-              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
-                <input
-                  value={search}
-                  onChange={e => { setSearch(e.target.value); setPage(1) }}
-                  placeholder="🔍 Search models or datasets..."
-                  style={{ padding: '8px 12px', background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: 8, color: 'var(--text)', fontSize: 12, outline: 'none', width: 220 }}
-                />
-                {['all', 'classification', 'regression'].map(t => (
-                  <button key={t} style={pill(task === t)} onClick={() => { setTask(t); setPage(1) }}>{t}</button>
-                ))}
+              <div className="ab-tools">
+                <label className="ab-search">
+                  <Search size={15} />
+                  <input value={search} onChange={e => { setSearch(e.target.value); setPage(1) }} placeholder="Search models or datasets" aria-label="Search models" />
+                </label>
+                <div className="ab-pills">
+                  {['all', 'classification', 'regression'].map(t => (
+                    <button key={t} className={task === t ? 'on' : ''} onClick={() => { setTask(t); setPage(1) }}>{t}</button>
+                  ))}
+                </div>
               </div>
             </div>
 
-            <div className="table-wrap">
-              <table className="preview-table">
+            <div className="ab-tw">
+              <table className="ab-table">
                 <thead>
-                  <tr>
-                    <th>Model</th><th>Dataset</th><th>Task</th>
-                    <th>Score</th><th>F1 / RMSE</th><th>Time</th><th>Trained</th>
-                  </tr>
+                  <tr><th>Model</th><th>Dataset</th><th>Task</th><th>Score</th><th>F1 / RMSE</th><th>Time</th><th>Trained</th></tr>
                 </thead>
                 <tbody>
                   {loading ? (
-                    <tr><td colSpan={7}><div className="skeleton" style={{ height: 24 }} /></td></tr>
+                    <tr><td colSpan={7}><div className="ab-skel" /></td></tr>
                   ) : visible.length === 0 ? (
-                    <tr><td colSpan={7} style={{ color: 'var(--text3)', textAlign: 'center', padding: 24 }}>No models match your search.</td></tr>
-                  ) : visible.map(r => {
-                    const t = TASK_STYLE[r.task]
-                    return (
-                      <tr key={r.key} onClick={() => setSelectedKey(r.key)}
-                          style={{ cursor: 'pointer', background: selectedKey === r.key ? 'var(--sky-dim)' : undefined }}>
-                        <td style={{ fontWeight: 600, color: 'var(--text)' }}>
-                          {r.name} {r.isWinner && <span className="badge badge-best" style={{ marginLeft: 6 }}>BEST</span>}
-                        </td>
-                        <td style={{ color: 'var(--text2)' }}>{r.dataset}</td>
-                        <td>
-                          <span style={{ fontSize: 9, fontWeight: 700, padding: '3px 8px', borderRadius: 99, background: t.bg, color: t.color, border: `1px solid ${t.border}` }}>
-                            {t.label}
-                          </span>
-                        </td>
-                        <td>
-                          <div style={{ fontWeight: 700, color: 'var(--teal)' }}>{rowScore(r.task, r.score)}</div>
-                          {r.task === 'classification' && r.score != null && (
-                            <div style={{ height: 3, width: 70, background: 'var(--border)', borderRadius: 2, marginTop: 4, overflow: 'hidden' }}>
-                              <div style={{ height: '100%', width: `${r.score * 100}%`, background: 'var(--teal)' }} />
-                            </div>
-                          )}
-                        </td>
-                        <td>{r.task === 'classification' ? pct(r.f1) : (r.rmse == null ? '—' : r.rmse.toFixed(3))}</td>
-                        <td style={{ color: 'var(--text3)' }}>{seconds(r.time)}</td>
-                        <td style={{ color: 'var(--text3)' }}>{timeAgo(r.createdAt)}</td>
-                      </tr>
-                    )
-                  })}
+                    <tr><td colSpan={7} className="ab-lbl" style={{ textAlign: 'center', padding: 24 }}>No models match your search.</td></tr>
+                  ) : visible.map((r, i) => (
+                    <motion.tr
+                      key={r.key}
+                      className={`click${selectedKey === r.key ? ' sel' : ''}`}
+                      onClick={() => setSelectedKey(r.key)}
+                      initial={{ opacity: 0, x: -12 }} animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.3, delay: i * 0.04 }}
+                    >
+                      <td style={{ fontWeight: 600 }}>{r.name}{r.isWinner && <span className="ab-badge">BEST</span>}</td>
+                      <td>{r.dataset}</td>
+                      <td><span className={`ab-chip ${r.task === 'classification' ? 'dk' : 'hz'}`}>{r.task}</span></td>
+                      <td>
+                        <div className="num">{rowScore(r.task, r.score)}</div>
+                        {r.task === 'classification' && r.score != null && (
+                          <div className="ab-track"><i style={{ width: `${r.score * 100}%` }} /></div>
+                        )}
+                      </td>
+                      <td>{r.task === 'classification' ? pct(r.f1) : (r.rmse == null ? '—' : r.rmse.toFixed(3))}</td>
+                      <td className="ab-lbl">{seconds(r.time)}</td>
+                      <td className="ab-lbl">{timeAgo(r.createdAt)}</td>
+                    </motion.tr>
+                  ))}
                 </tbody>
               </table>
             </div>
 
             {totalPages > 1 && (
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 14, fontSize: 11, color: 'var(--text2)' }}>
+              <div className="ab-pager">
                 <span>Page {safePage} of {totalPages}</span>
                 <div style={{ display: 'flex', gap: 6 }}>
-                  <button className="btn" style={{ padding: '5px 12px', fontSize: 11 }} disabled={safePage === 1} onClick={() => setPage(safePage - 1)}>Prev</button>
-                  <button className="btn" style={{ padding: '5px 12px', fontSize: 11 }} disabled={safePage === totalPages} onClick={() => setPage(safePage + 1)}>Next</button>
+                  <button className="ab-btn sm" disabled={safePage === 1} onClick={() => setPage(safePage - 1)}>Prev</button>
+                  <button className="ab-btn sm" disabled={safePage === totalPages} onClick={() => setPage(safePage + 1)}>Next</button>
                 </div>
               </div>
             )}
-          </div>
+          </Card>
         </>
       )}
-    </div>
+    </Page>
   )
 }

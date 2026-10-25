@@ -32,7 +32,7 @@ export default function ResultsStep({ results, rows, features, task, target, onR
           </div>
           <div className="card-sub">
             Leaderboard sorted by {sortKey === 'accuracy' ? 'Accuracy' : 'R²'} · Target:{' '}
-            <b style={{ color: 'var(--primary)' }}>{target}</b>
+            <b style={{ color: 'var(--ab-acc)' }}>{target}</b>
           </div>
         </div>
       </div>
@@ -56,7 +56,7 @@ export default function ResultsStep({ results, rows, features, task, target, onR
           <div className="stat-lbl">Task type</div>
         </div>
         <div className="stat-box">
-          <div className="stat-val" style={{ color: 'var(--success)' }}>{bestScore}</div>
+          <div className="stat-val" style={{ color: 'var(--ab-ok)' }}>{bestScore}</div>
           <div className="stat-lbl">Best score</div>
         </div>
       </div>
@@ -83,7 +83,7 @@ export default function ResultsStep({ results, rows, features, task, target, onR
                 <div className="bar-track">
                   <div className="bar-fill" style={{
                     width: `${r.accuracy * 100}%`,
-                    background: i === 0 ? 'var(--success)' : i === 1 ? 'var(--primary)' : 'var(--text3)'
+                    background: i === 0 ? 'var(--ab-ok)' : i === 1 ? 'var(--ab-acc)' : 'var(--ab-line)'
                   }} />
                 </div>
               </div>
@@ -118,7 +118,7 @@ export default function ResultsStep({ results, rows, features, task, target, onR
                 <div className="bar-track">
                   <div className="bar-fill" style={{
                     width: `${Math.max(0, r.r2) * 100}%`,
-                    background: i === 0 ? 'var(--success)' : i === 1 ? 'var(--primary)' : 'var(--text3)'
+                    background: i === 0 ? 'var(--ab-ok)' : i === 1 ? 'var(--ab-acc)' : 'var(--ab-line)'
                   }} />
                 </div>
               </div>

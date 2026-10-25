@@ -53,7 +53,7 @@ export default function ConfigureStep({ file, columns, preview, target, task, on
                 {preview.map((row, i) => (
                   <tr key={i}>
                     {columns.slice(0, 7).map(c => <td key={c}>{row[c] ?? '—'}</td>)}
-                    {columns.length > 7 && <td style={{ color: 'var(--text3)' }}>…</td>}
+                    {columns.length > 7 && <td style={{ color: 'var(--ab-mut)' }}>…</td>}
                   </tr>
                 ))}
               </tbody>

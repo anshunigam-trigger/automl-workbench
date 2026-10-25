@@ -1,0 +1,576 @@
+/* ══════════════════════════════════════════════════════
+   THEMED OVERRIDES — scoped to .abs (the app shell)
+   Maps all components across all pages to the unified
+   --ab-* token system so light/dark mode and aesthetic
+   match the modern Dashboard exactly.
+   ══════════════════════════════════════════════════════ */
+
+/* ── Typography & Headers ── */
+.abs .page-title,
+.abs .rp-title,
+.abs .ab-title {
+  font-size: 34px !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.02em !important;
+  color: var(--ab-ink) !important;
+  margin: 0 0 4px !important;
+}
+
+.abs .page-sub,
+.abs .rp-sub,
+.abs .ab-sub {
+  color: var(--ab-mut) !important;
+  font-size: 14px !important;
+  margin: 0 0 22px !important;
+  line-height: 1.5 !important;
+}
+
+.abs .breadcrumb {
+  display: none !important;
+}
+
+.abs .page-title .grad,
+.abs .rp-title .grad {
+  background: none !important;
+  -webkit-background-clip: unset !important;
+  -webkit-text-fill-color: var(--ab-ink) !important;
+  color: var(--ab-ink) !important;
+}
+
+/* ── Cards ── */
+.abs .card,
+.abs .chart-card {
+  background: var(--ab-card) !important;
+  border: 1px solid var(--ab-line) !important;
+  border-radius: 24px !important;
+  color: var(--ab-ink) !important;
+  padding: 24px !important;
+  backdrop-filter: none !important;
+  box-shadow: 0 2px 14px rgba(0,0,0,0.02) !important;
+}
+
+.abs .card:hover,
+.abs .chart-card:hover {
+  border-color: color-mix(in srgb, var(--ab-line) 40%, var(--ab-ink) 60%) !important;
+  box-shadow: 0 12px 32px rgba(0,0,0,0.06) !important;
+}
+
+.abs .card-title,
+.abs .chart-title {
+  font-size: 17px !important;
+  font-weight: 700 !important;
+  color: var(--ab-ink) !important;
+  letter-spacing: -0.01em !important;
+  margin-bottom: 4px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+.abs .card-sub,
+.abs .chart-sub {
+  font-size: 13px !important;
+  color: var(--ab-mut) !important;
+  margin-bottom: 16px !important;
+}
+
+.abs .card-header {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  margin-bottom: 20px !important;
+  padding-bottom: 0 !important;
+  border-bottom: none !important;
+}
+
+/* ── Buttons ── */
+.abs .btn,
+.abs .ab-btn,
+.abs .rp-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  border: 1px solid var(--ab-line) !important;
+  border-radius: 14px !important;
+  padding: 10px 18px !important;
+  background: var(--ab-inset) !important;
+  color: var(--ab-ink) !important;
+  font: 600 13px inherit !important;
+  text-decoration: none !important;
+  cursor: pointer !important;
+  white-space: nowrap !important;
+  transition: all 0.2s cubic-bezier(0.22, 1, 0.36, 1) !important;
+}
+
+.abs .btn:hover,
+.abs .ab-btn:hover,
+.abs .rp-btn:hover {
+  background: var(--ab-card) !important;
+  border-color: color-mix(in srgb, var(--ab-line) 40%, var(--ab-ink) 60%) !important;
+  transform: translateY(-1px) !important;
+}
+
+.abs .btn.primary,
+.abs .ab-btn.dark,
+.abs .rp-btn.sky {
+  background: var(--ab-dark) !important;
+  border-color: var(--ab-dark) !important;
+  color: var(--ab-on) !important;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.12) !important;
+}
+
+.abs .btn.primary:hover,
+.abs .ab-btn.dark:hover,
+.abs .rp-btn.sky:hover {
+  opacity: 0.92 !important;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.18) !important;
+  transform: translateY(-1px) !important;
+}
+
+/* ── Stat Boxes & KPIs ── */
+.abs .stats-bar {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)) !important;
+  gap: 12px !important;
+  margin-bottom: 20px !important;
+}
+
+.abs .stat-box,
+.abs .kpi,
+.abs .ab-tile {
+  background: var(--ab-card) !important;
+  border: 1px solid var(--ab-line) !important;
+  border-radius: 20px !important;
+  padding: 18px 20px !important;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.02) !important;
+  transition: all 0.2s ease !important;
+}
+
+.abs .stat-box:hover,
+.abs .kpi:hover,
+.abs .ab-tile:hover {
+  border-color: color-mix(in srgb, var(--ab-line) 40%, var(--ab-ink) 60%) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.06) !important;
+}
+
+.abs .stat-val,
+.abs .kpi-val,
+.abs .ab-big {
+  font-size: 26px !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.02em !important;
+  color: var(--ab-ink) !important;
+  font-variant-numeric: tabular-nums !important;
+  line-height: 1.1 !important;
+  margin-top: 4px !important;
+}
+
+.abs .stat-lbl,
+.abs .kpi-lbl,
+.abs .ab-lbl {
+  font-size: 12px !important;
+  color: var(--ab-mut) !important;
+  font-weight: 500 !important;
+  text-transform: none !important;
+  letter-spacing: normal !important;
+}
+
+.abs .kpi-icon {
+  width: 40px !important;
+  height: 40px !important;
+  border-radius: 12px !important;
+  background: var(--ab-inset) !important;
+  border: 1px solid var(--ab-line) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 18px !important;
+}
+
+.abs .kpi.best {
+  border-color: var(--ab-ok) !important;
+  background: color-mix(in srgb, var(--ab-ok) 8%, var(--ab-card)) !important;
+}
+
+.abs .kpi.best .kpi-val {
+  color: var(--ab-ok) !important;
+}
+
+/* ── Tables ── */
+.abs .table-wrap {
+  border: 1px solid var(--ab-line) !important;
+  border-radius: 18px !important;
+  overflow: hidden !important;
+  background: var(--ab-card) !important;
+}
+
+.abs .preview-table,
+.abs .exp-tbl,
+.abs .ab-table {
+  width: 100% !important;
+  border-collapse: collapse !important;
+  font-size: 13px !important;
+}
+
+.abs .preview-table th,
+.abs .exp-tbl th,
+.abs .ab-table th {
+  background: var(--ab-inset) !important;
+  color: var(--ab-mut) !important;
+  font-weight: 600 !important;
+  font-size: 11px !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.06em !important;
+  padding: 12px 16px !important;
+  border-bottom: 1px solid var(--ab-line) !important;
+  text-align: left !important;
+}
+
+.abs .preview-table td,
+.abs .exp-tbl td,
+.abs .ab-table td {
+  color: var(--ab-ink) !important;
+  padding: 13px 16px !important;
+  border-bottom: 1px solid var(--ab-line) !important;
+}
+
+.abs .preview-table tbody tr:last-child td,
+.abs .exp-tbl tbody tr:last-child td,
+.abs .ab-table tbody tr:last-child td {
+  border-bottom: none !important;
+}
+
+.abs .preview-table tbody tr:hover td,
+.abs .exp-tbl tbody tr:hover td,
+.abs .ab-table tbody tr:hover td {
+  background: var(--ab-inset) !important;
+}
+
+/* ── Error Bar ── */
+.abs .error-bar,
+.abs .ab-err {
+  background: color-mix(in srgb, var(--ab-bad) 10%, var(--ab-card)) !important;
+  border: 1px solid color-mix(in srgb, var(--ab-bad) 30%, transparent) !important;
+  color: var(--ab-bad) !important;
+  border-radius: 14px !important;
+  padding: 12px 18px !important;
+  margin-bottom: 20px !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+}
+
+/* ── Stepper ── */
+.abs .stepper {
+  background: var(--ab-card) !important;
+  border: 1px solid var(--ab-line) !important;
+  border-radius: 20px !important;
+  padding: 10px 14px !important;
+  margin-bottom: 24px !important;
+  backdrop-filter: none !important;
+}
+
+.abs .stepper-item {
+  border-radius: 14px !important;
+  padding: 8px 12px !important;
+}
+
+.abs .stepper-item.active {
+  background: var(--ab-inset) !important;
+}
+
+.abs .s-num {
+  border: 2px solid var(--ab-line) !important;
+  color: var(--ab-mut) !important;
+  background: var(--ab-inset) !important;
+  width: 32px !important;
+  height: 32px !important;
+  border-radius: 50% !important;
+  font-weight: 700 !important;
+  font-size: 13px !important;
+}
+
+.abs .s-num.active {
+  background: var(--ab-acc) !important;
+  border-color: var(--ab-acc) !important;
+  color: #fff !important;
+  box-shadow: 0 0 16px color-mix(in srgb, var(--ab-acc) 40%, transparent) !important;
+}
+
+.abs .s-num.done {
+  background: var(--ab-ok) !important;
+  border-color: var(--ab-ok) !important;
+  color: #fff !important;
+  box-shadow: none !important;
+}
+
+.abs .s-label { color: var(--ab-mut) !important; }
+.abs .stepper-item.active .s-label,
+.abs .stepper-item.done .s-label { color: var(--ab-ink) !important; }
+.abs .s-desc { color: var(--ab-mut) !important; }
+.abs .s-divider { background: var(--ab-line) !important; }
+
+/* ── Dropzone ── */
+.abs .dropzone-wrap::before {
+  background: linear-gradient(var(--border-angle, 0deg), var(--ab-acc), var(--ab-acc2), #ff8a50, var(--ab-acc)) !important;
+}
+.abs .dropzone {
+  background: var(--ab-inset) !important;
+  border: 2px dashed var(--ab-line) !important;
+  border-radius: 20px !important;
+  padding: 44px 24px !important;
+  text-align: center !important;
+  transition: all 0.2s ease !important;
+}
+.abs .dropzone:hover,
+.abs .dropzone.over {
+  background: var(--ab-card) !important;
+  border-color: var(--ab-acc) !important;
+}
+.abs .dz-title { color: var(--ab-ink) !important; font-size: 18px !important; font-weight: 700 !important; }
+.abs .dz-sub   { color: var(--ab-mut) !important; font-size: 14px !important; }
+.abs .dz-sub b  { color: var(--ab-acc) !important; }
+.abs .dz-hint  { color: var(--ab-mut) !important; font-size: 12px !important; }
+
+/* ── Algorithm Cards ── */
+.abs .algo-card {
+  border: 1px solid var(--ab-line) !important;
+  border-radius: 18px !important;
+  background: var(--ab-card) !important;
+  transition: all 0.2s ease !important;
+}
+.abs .algo-card:hover {
+  border-color: color-mix(in srgb, var(--ab-line) 40%, var(--ab-ink) 60%) !important;
+  background: var(--ab-inset) !important;
+}
+.abs .algo-card.selected {
+  border-color: var(--ab-acc) !important;
+  background: color-mix(in srgb, var(--ab-acc) 8%, var(--ab-card)) !important;
+}
+.abs .algo-tag { color: var(--ab-mut) !important; }
+.abs .algo-card.selected .algo-tag { color: var(--ab-acc) !important; }
+.abs .algo-name { color: var(--ab-ink) !important; font-weight: 700 !important; }
+.abs .algo-desc { color: var(--ab-mut) !important; }
+.abs .algo-check { border-color: var(--ab-line) !important; }
+.abs .algo-card.selected .algo-check {
+  background: var(--ab-acc) !important;
+  border-color: var(--ab-acc) !important;
+  color: #fff !important;
+}
+
+/* ── Training Log & Progress ── */
+.abs .train-log {
+  background: var(--ab-inset) !important;
+  border: 1px solid var(--ab-line) !important;
+  border-radius: 16px !important;
+  color: var(--ab-ink) !important;
+}
+.abs .log-ts      { color: var(--ab-mut) !important; }
+.abs .log-text.info { color: var(--ab-mut) !important; }
+.abs .log-text.ok { color: var(--ab-ok) !important; }
+.abs .log-text.run { color: var(--ab-acc) !important; }
+.abs .log-cursor  { color: var(--ab-mut) !important; }
+
+.abs .progress-meta   { color: var(--ab-mut) !important; }
+.abs .progress-meta b { color: var(--ab-ink) !important; }
+.abs .progress-track  { background: var(--ab-line) !important; border-radius: 99px !important; }
+.abs .progress-fill   { background: var(--ab-acc) !important; border-radius: 99px !important; box-shadow: none !important; }
+
+/* ── File Chip & Column Chips ── */
+.abs .file-chip {
+  background: color-mix(in srgb, var(--ab-ok) 10%, var(--ab-card)) !important;
+  border: 1px solid color-mix(in srgb, var(--ab-ok) 30%, transparent) !important;
+  border-radius: 12px !important;
+}
+.abs .file-chip-name { color: var(--ab-ok) !important; }
+.abs .file-chip-meta { color: var(--ab-mut) !important; }
+
+.abs .section-label { color: var(--ab-mut) !important; font-weight: 600 !important; }
+.abs .col-chip {
+  border: 1px solid var(--ab-line) !important;
+  color: var(--ab-mut) !important;
+  background: var(--ab-inset) !important;
+  border-radius: 10px !important;
+}
+.abs .col-chip:hover { border-color: var(--ab-acc) !important; color: var(--ab-acc) !important; }
+.abs .col-chip.target {
+  border-color: var(--ab-acc) !important;
+  color: var(--ab-acc) !important;
+  background: color-mix(in srgb, var(--ab-acc) 10%, var(--ab-card)) !important;
+}
+.abs .col-chip.numeric { border-color: var(--ab-ok) !important; color: var(--ab-ok) !important; }
+
+/* ── Form Controls & Selects ── */
+.abs select,
+.abs input:not([type="checkbox"]):not([type="radio"]) {
+  background: var(--ab-inset) !important;
+  border: 1px solid var(--ab-line) !important;
+  border-radius: 12px !important;
+  color: var(--ab-ink) !important;
+}
+.abs select:focus,
+.abs input:focus {
+  border-color: var(--ab-acc) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ab-acc) 15%, transparent) !important;
+}
+
+/* ── Leaderboard & Results ── */
+.abs .lb-header { color: var(--ab-mut) !important; border-bottom: 1px solid var(--ab-line) !important; }
+.abs .lb-row    { border-bottom: 1px solid var(--ab-line) !important; }
+.abs .lb-model-name { color: var(--ab-ink) !important; font-weight: 600 !important; }
+.abs .badge      { color: var(--ab-ink) !important; border-radius: 99px !important; }
+.abs .badge-best { background: color-mix(in srgb, var(--ab-ok) 12%, var(--ab-card)) !important; color: var(--ab-ok) !important; border: 1px solid color-mix(in srgb, var(--ab-ok) 30%, transparent) !important; }
+.abs .badge-2nd  { background: color-mix(in srgb, var(--ab-acc) 12%, var(--ab-card)) !important; color: var(--ab-acc) !important; border: 1px solid color-mix(in srgb, var(--ab-acc) 30%, transparent) !important; }
+.abs .bar-track  { background: var(--ab-line) !important; border-radius: 99px !important; }
+.abs .lb-metric  { color: var(--ab-ink) !important; font-weight: 600 !important; }
+.abs .lb-metric.best { color: var(--ab-ok) !important; }
+.abs .lb-time    { color: var(--ab-mut) !important; }
+
+/* ── Insight Box ── */
+.abs .insight-box {
+  background: var(--ab-inset) !important;
+  border: 1px solid var(--ab-ok) !important;
+  border-radius: 16px !important;
+  color: var(--ab-mut) !important;
+}
+.abs .insight-box strong { color: var(--ab-ok) !important; }
+
+/* ── Datasets Page Components ── */
+.abs .ds-grid {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)) !important;
+  gap: 16px !important;
+}
+
+.abs .ds-card {
+  background: var(--ab-card) !important;
+  border: 1px solid var(--ab-line) !important;
+  border-radius: 24px !important;
+  padding: 22px !important;
+  color: var(--ab-ink) !important;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.02) !important;
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), border-color 0.25s, box-shadow 0.25s !important;
+}
+
+.abs .ds-card:hover {
+  transform: translateY(-4px) !important;
+  border-color: var(--c) !important;
+  box-shadow: 0 16px 36px rgba(0,0,0,0.08) !important;
+}
+
+.abs .ds-name {
+  color: var(--ab-ink) !important;
+  font-size: 15px !important;
+  font-weight: 700 !important;
+}
+
+.abs .ds-target {
+  color: var(--ab-mut) !important;
+  font-size: 12px !important;
+}
+
+.abs .ds-stat {
+  background: var(--ab-inset) !important;
+  border: 1px solid var(--ab-line) !important;
+  border-radius: 14px !important;
+  padding: 10px 12px !important;
+}
+
+.abs .ds-stat-val {
+  color: var(--ab-ink) !important;
+  font-size: 16px !important;
+  font-weight: 700 !important;
+}
+
+.abs .ds-stat-lbl {
+  color: var(--ab-mut) !important;
+  font-size: 10px !important;
+}
+
+.abs .upload-zone-inner {
+  background: var(--ab-card) !important;
+  border: 1px solid var(--ab-line) !important;
+  border-radius: 24px !important;
+  padding: 22px 24px !important;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.02) !important;
+}
+
+.abs .upload-zone-title {
+  color: var(--ab-ink) !important;
+  font-size: 16px !important;
+  font-weight: 700 !important;
+}
+
+.abs .upload-zone-sub {
+  color: var(--ab-mut) !important;
+  font-size: 13px !important;
+}
+
+.abs .search-input {
+  background: var(--ab-inset) !important;
+  border: 1px solid var(--ab-line) !important;
+  border-radius: 14px !important;
+  color: var(--ab-ink) !important;
+  font-size: 13px !important;
+  padding: 11px 16px !important;
+}
+
+.abs .search-input:focus {
+  border-color: var(--ab-acc) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ab-acc) 15%, transparent) !important;
+}
+
+.abs .filter-btn {
+  background: var(--ab-inset) !important;
+  border: 1px solid var(--ab-line) !important;
+  border-radius: 14px !important;
+  color: var(--ab-mut) !important;
+  font-size: 13px !important;
+  padding: 11px 18px !important;
+  font-weight: 600 !important;
+}
+
+.abs .filter-btn:hover {
+  background: var(--ab-card) !important;
+  color: var(--ab-ink) !important;
+}
+
+.abs .filter-btn.on {
+  background: var(--ab-dark) !important;
+  color: var(--ab-on) !important;
+  border-color: var(--ab-dark) !important;
+}
+
+.abs .ds-meta {
+  color: var(--ab-mut) !important;
+  border-top: 1px solid var(--ab-line) !important;
+}
+
+.abs .empty-state-large {
+  border: 1.5px dashed var(--ab-line) !important;
+  border-radius: 24px !important;
+  background: var(--ab-card) !important;
+  padding: 64px 32px !important;
+}
+
+.abs .empty-state-title {
+  color: var(--ab-ink) !important;
+  font-size: 18px !important;
+  font-weight: 700 !important;
+}
+
+.abs .empty-state-sub {
+  color: var(--ab-mut) !important;
+  font-size: 14px !important;
+}
+
+/* ── Recharts Tooltip Theme ── */
+.abs .recharts-default-tooltip,
+.abs .recharts-tooltip-wrapper > div {
+  background: var(--ab-card) !important;
+  border: 1px solid var(--ab-line) !important;
+  border-radius: 14px !important;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.12) !important;
+  color: var(--ab-ink) !important;
+}

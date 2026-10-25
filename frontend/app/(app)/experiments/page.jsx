@@ -1,6 +1,7 @@
 'use client'
 
 import { useState }        from 'react'
+import { AnimatePresence, motion } from 'framer-motion'
 import Stepper             from '@/components/Stepper'
 import UploadStep          from '@/components/steps/UploadStep'
 import ConfigureStep       from '@/components/steps/ConfigureStep'
@@ -10,10 +11,9 @@ import ResultsStep         from '@/components/steps/ResultsStep'
 import { parseCSV }        from '@/lib/parseCSV'
 import { trainModels }     from '@/lib/api'
 import { LOG_LINES, CLS_MODELS, REG_MODELS } from '@/lib/constants'
+import { Page, Card, toast } from '@/components/ui'
 
 const delay = ms => new Promise(r => setTimeout(r, ms))
-
-
 
 export default function HomePage() {
   const [step,     setStep]     = useState(1)
@@ -70,8 +70,11 @@ export default function HomePage() {
       setLogs(p => [...p, { text: '[OK]   All models evaluated. Leaderboard ready.', tag: 'ok' }])
       await delay(500)
       setResults(data.results); setRows(data.rows); setFeatures(data.features); setStep(4)
+      toast('Experiment complete. Leaderboard ready.', 'success')
     } catch (err) {
-      setError(err.message || 'Backend error — make sure FastAPI is running on port 8000.')
+      const msg = err.message || 'Backend error — make sure FastAPI is running on port 8000.'
+      setError(msg)
+      toast(msg, 'error')
     } finally { setLoading(false) }
   }
 
@@ -84,57 +87,57 @@ export default function HomePage() {
   }
 
   return (
-    <div className="page-content">
+    <Page title="New experiment" sub="Upload a dataset and compare ML models in seconds.">
 
-      {/* ── 1. New Experiment Wizard ── */}
-      <div className="card fade-up-3">
-        <div className="card-header">
-          <div>
-            <div className="card-title">
-              <span className="card-title-icon">🚀</span>
-              New Experiment
-            </div>
-            <div className="card-sub">
-              Upload a dataset and compare ML models in seconds
-            </div>
-          </div>
-        </div>
-
+      {/* .ab-legacy = dark panel that keeps the existing step components readable until they're restyled */}
+      <Card className="ab-legacy">
         <Stepper currentStep={step} />
 
-        {error && <div className="error-bar">⚠ &nbsp;{error}</div>}
+        {error && (
+          <div className="ab-err">
+            ⚠ {error}{step === 3 && !loading && selected.length > 0 && <> &nbsp;<button className="ab-link" onClick={handleRun}>Try again</button></>}
+          </div>
+        )}
 
-        {step === 1 && <UploadStep onFile={handleFile} />}
-        {step === 2 && (
-          <ConfigureStep
-            file={file} columns={columns} preview={preview}
-            target={target} task={task}
-            onTarget={setTarget} onTask={handleTaskChange}
-            onBack={() => setStep(1)} onNext={() => setStep(3)}
-          />
-        )}
-        {step === 3 && !loading && (
-          <AlgorithmsStep
-            task={task} target={target} selected={selected}
-            onToggle={handleToggle}
-            onBack={() => setStep(2)} onRun={handleRun} loading={loading}
-          />
-        )}
-        {loading && (
-          <TrainingStep
-            logs={logs} progress={progress}
-            modelCount={selected.length} fileName={file?.name}
-          />
-        )}
-        {step === 4 && results && (
-          <ResultsStep
-            results={results} rows={rows} features={features}
-            task={task} target={target}
-            onRetry={handleRetry} onReset={handleReset}
-          />
-        )}
-      </div>
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.div
+            key={loading ? 'training' : step}
+            initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }}
+            transition={{ duration: 0.25 }}
+          >
+            {step === 1 && <UploadStep onFile={handleFile} />}
+            {step === 2 && (
+              <ConfigureStep
+                file={file} columns={columns} preview={preview}
+                target={target} task={task}
+                onTarget={setTarget} onTask={handleTaskChange}
+                onBack={() => setStep(1)} onNext={() => setStep(3)}
+              />
+            )}
+            {step === 3 && !loading && (
+              <AlgorithmsStep
+                task={task} target={target} selected={selected}
+                onToggle={handleToggle}
+                onBack={() => setStep(2)} onRun={handleRun} loading={loading}
+              />
+            )}
+            {loading && (
+              <TrainingStep
+                logs={logs} progress={progress}
+                modelCount={selected.length} fileName={file?.name}
+              />
+            )}
+            {step === 4 && results && (
+              <ResultsStep
+                results={results} rows={rows} features={features}
+                task={task} target={target}
+                onRetry={handleRetry} onReset={handleReset}
+              />
+            )}
+          </motion.div>
+        </AnimatePresence>
+      </Card>
 
-    </div>
+    </Page>
   )
 }

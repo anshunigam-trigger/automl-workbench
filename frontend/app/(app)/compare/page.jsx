@@ -15,11 +15,11 @@ const SERIES    = ['#38BDF8', '#A78BFA', '#2DD4BF', '#FBBF24']   // one color pe
 const labelOf = e => `${e.dataset.replace(/\.csv$/i, '')} #${e.id}`
 
 const pill = active => ({
-  padding: '5px 12px', borderRadius: 6, fontSize: 11, fontWeight: 500, cursor: 'pointer',
+  padding: '6px 14px', borderRadius: 10, fontSize: 11, fontWeight: 600, cursor: 'pointer',
   fontFamily: 'var(--sans)',
-  border: `1px solid ${active ? 'var(--sky-glow)' : 'var(--border)'}`,
-  background: active ? 'var(--sky-dim)' : 'transparent',
-  color: active ? 'var(--sky)' : 'var(--text2)',
+  border: `1px solid ${active ? 'var(--ab-acc)' : 'var(--ab-line)'}`,
+  background: active ? 'color-mix(in srgb, var(--ab-acc) 10%, var(--ab-card))' : 'var(--ab-inset)',
+  color: active ? 'var(--ab-acc)' : 'var(--ab-mut)',
 })
 
 const Dot = ({ color }) => (
@@ -116,10 +116,9 @@ export default function ComparePage() {
     <div className="page-content">
 
       {/* Header */}
-      <div className="page-header fade-up">
-        <div className="breadcrumb">Compare</div>
-        <div className="page-title"><span className="grad">Compare Experiments</span></div>
-        <div className="page-sub">Put experiments side by side to see what changed and what won.</div>
+      <div style={{ marginBottom: 24 }}>
+        <h1 className="ab-title">Compare Experiments</h1>
+        <p className="ab-sub">Put experiments side by side to see what changed and what won.</p>
       </div>
 
       {error && <div className="error-bar">⚠ &nbsp;{error}</div>}
@@ -129,10 +128,10 @@ export default function ComparePage() {
         <div className="card fade-up-1" style={{ textAlign: 'center', padding: '56px 24px', borderStyle: 'dashed' }}>
           <div style={{ fontSize: 40, marginBottom: 12 }}>⚖️</div>
           <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 6 }}>You need at least two experiments to compare</div>
-          <div style={{ fontSize: 13, color: 'var(--text2)', marginBottom: 16 }}>
+          <div style={{ fontSize: 13, color: 'var(--ab-mut)', marginBottom: 16 }}>
             Run another experiment, ideally on the same dataset with different algorithms.
           </div>
-          <Link href="/experiments" className="btn primary">+ Run an experiment</Link>
+          <Link href="/experiments" className="ab-btn dark">+ Run an experiment</Link>
         </div>
       )}
 
@@ -147,7 +146,7 @@ export default function ComparePage() {
               </div>
               {ids.length > 0 && (
                 <button onClick={() => setPicked([])}
-                  style={{ background: 'none', border: 'none', color: 'var(--sky)', fontSize: 11, cursor: 'pointer' }}>
+                  style={{ background: 'none', border: 'none', color: 'var(--ab-acc)', fontSize: 11, cursor: 'pointer', fontWeight: 600 }}>
                   Clear
                 </button>
               )}
@@ -166,22 +165,23 @@ export default function ComparePage() {
                         title={why ?? undefined} onClick={() => toggle(e.id)}
                         style={{
                           display: 'flex', alignItems: 'center', gap: 12, width: '100%', textAlign: 'left',
-                          padding: '10px 12px', borderRadius: 10, fontFamily: 'var(--sans)', color: 'inherit',
+                          padding: '12px 14px', borderRadius: 14, fontFamily: 'var(--sans)', color: 'inherit',
                           cursor: why ? 'not-allowed' : 'pointer', opacity: why ? 0.4 : 1,
-                          background: on ? 'var(--sky-dim)' : 'var(--surface2)',
-                          border: `1px solid ${on ? 'var(--sky-glow)' : 'var(--border)'}`,
+                          background: on ? 'color-mix(in srgb, var(--ab-acc) 10%, var(--ab-card))' : 'var(--ab-inset)',
+                          border: `1px solid ${on ? 'var(--ab-acc)' : 'var(--ab-line)'}`,
+                          transition: 'all 0.15s ease',
                         }}
                       >
                         <span style={{
-                          width: 16, height: 16, borderRadius: 4, flexShrink: 0, display: 'grid', placeItems: 'center',
-                          fontSize: 10, fontWeight: 700, color: '#020817',
+                          width: 18, height: 18, borderRadius: 5, flexShrink: 0, display: 'grid', placeItems: 'center',
+                          fontSize: 10, fontWeight: 700, color: '#fff',
                           background: on ? SERIES[ids.indexOf(e.id)] : 'transparent',
-                          border: `1px solid ${on ? 'transparent' : 'var(--border2)'}`,
+                          border: `1px solid ${on ? 'transparent' : 'var(--ab-line)'}`,
                         }}>{on && '✓'}</span>
 
                         <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>{e.dataset}</div>
-                          <div style={{ fontSize: 10, color: 'var(--text3)', fontFamily: 'var(--mono)', marginTop: 2 }}>
+                          <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--ab-ink)' }}>{e.dataset}</div>
+                          <div style={{ fontSize: 11, color: 'var(--ab-mut)', fontFamily: 'var(--mono)', marginTop: 2 }}>
                             #{e.id} · target: {e.target} · {e.rows?.toLocaleString() ?? '—'} rows · {timeAgo(e.created_at)}
                           </div>
                         </div>
@@ -189,7 +189,7 @@ export default function ComparePage() {
                         <span style={{ fontSize: 9, fontWeight: 700, padding: '3px 8px', borderRadius: 99, background: t.bg, color: t.color, border: `1px solid ${t.border}` }}>
                           {t.label}
                         </span>
-                        <span style={{ fontFamily: 'var(--mono)', fontSize: 12, fontWeight: 700, color: 'var(--teal)', minWidth: 64, textAlign: 'right' }}>
+                        <span style={{ fontFamily: 'var(--mono)', fontSize: 12, fontWeight: 700, color: 'var(--ab-ok)', minWidth: 64, textAlign: 'right' }}>
                           {formatScore(a.best, e.task)}
                         </span>
                       </button>
@@ -207,11 +207,11 @@ export default function ComparePage() {
           {ready && (
             <>
               {!sameDataset && (
-                <div className="fade-up" style={{
-                  padding: '12px 16px', marginBottom: 16, borderRadius: 10, fontSize: 12, lineHeight: 1.6,
-                  background: '#FBBF2412', border: '1px solid #FBBF2440', color: 'var(--text2)',
+                <div style={{
+                  padding: '12px 18px', marginBottom: 16, borderRadius: 14, fontSize: 13, lineHeight: 1.6,
+                  background: 'color-mix(in srgb, #f59e0b 10%, var(--ab-card))', border: '1px solid color-mix(in srgb, #f59e0b 30%, transparent)', color: 'var(--ab-mut)',
                 }}>
-                  <b style={{ color: 'var(--amber)' }}>⚠ Different datasets.</b> Score differences here reflect the
+                  <b style={{ color: '#f59e0b' }}>⚠ Different datasets.</b> Score differences here reflect the
                   data as much as the models. For a fair comparison, pick runs on the same dataset.
                 </div>
               )}
@@ -223,7 +223,7 @@ export default function ComparePage() {
                     <div className="card-title"><span className="card-title-icon">📋</span>Summary</div>
                     <div className="card-sub">Best value in the score row is highlighted</div>
                   </div>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: 'var(--text2)', cursor: 'pointer' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: 'var(--ab-mut)', cursor: 'pointer' }}>
                     <input type="checkbox" checked={diffOnly} onChange={e => setDiffOnly(e.target.checked)} />
                     Show only differences
                   </label>
@@ -241,16 +241,16 @@ export default function ComparePage() {
                     </thead>
                     <tbody>
                       {visibleRows.length === 0 ? (
-                        <tr><td colSpan={selected.length + 1} style={{ textAlign: 'center', color: 'var(--text3)', padding: 20 }}>
+                        <tr><td colSpan={selected.length + 1} style={{ textAlign: 'center', color: 'var(--ab-mut)', padding: 20 }}>
                           These experiments are identical on every attribute above.
                         </td></tr>
                       ) : visibleRows.map(r => (
                         <tr key={r.label}>
-                          <td style={{ color: 'var(--text3)', fontSize: 11 }}>{r.label}</td>
+                          <td style={{ color: 'var(--ab-mut)', fontSize: 11 }}>{r.label}</td>
                           {r.values.map((v, i) => {
                             const top = r.highlight === i
                             return (
-                              <td key={i} style={{ color: top ? 'var(--teal)' : 'var(--text)', fontWeight: top ? 700 : 500 }}>
+                              <td key={i} style={{ color: top ? 'var(--ab-ok)' : 'var(--ab-ink)', fontWeight: top ? 700 : 500 }}>
                                 {v} {top && '🏆'}
                               </td>
                             )
@@ -281,30 +281,30 @@ export default function ComparePage() {
 
                 <ResponsiveContainer width="100%" height={260}>
                   <BarChart data={chartData} margin={{ top: 8, right: 12, bottom: 0, left: -10 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#1E2D45" vertical={false} />
-                    <XAxis dataKey="name" interval={0} tick={{ fill: '#8BA0BF', fontSize: 10 }} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--ab-line)" vertical={false} />
+                    <XAxis dataKey="name" interval={0} tick={{ fill: 'var(--ab-mut)', fontSize: 10 }} />
                     <YAxis
                       domain={metric === 'score' ? [0, 1] : [0, 'auto']}
-                      tick={{ fill: '#3D5470', fontSize: 10 }}
+                      tick={{ fill: 'var(--ab-mut)', fontSize: 10 }}
                       tickFormatter={v => metric === 'score'
                         ? (task === 'classification' ? `${Math.round(v * 100)}%` : v.toFixed(1))
                         : `${v}s`}
                     />
                     <Tooltip
-                      cursor={{ fill: 'rgba(255,255,255,.03)' }}
+                      cursor={{ fill: 'color-mix(in srgb, var(--ab-ink) 4%, transparent)' }}
                       content={({ active, payload, label }) => {
                         if (!active || !payload?.length) return null
                         return (
-                          <div style={{ background: 'rgba(13,21,38,.97)', border: '1px solid #1E2D45', borderRadius: 8, padding: '8px 12px', fontSize: 11, fontFamily: 'var(--mono)' }}>
-                            <div style={{ color: '#F0F6FF', marginBottom: 4 }}>{label}</div>
+                          <div style={{ background: 'var(--ab-card)', border: '1px solid var(--ab-line)', borderRadius: 12, padding: '10px 14px', fontSize: 11, fontFamily: 'var(--mono)', boxShadow: '0 8px 24px rgba(0,0,0,0.12)' }}>
+                            <div style={{ color: 'var(--ab-ink)', fontWeight: 600, marginBottom: 4 }}>{label}</div>
                             {payload.map(p => (
-                              <div key={p.dataKey} style={{ color: p.color }}>{p.name}: {fmtCell(p.value)}</div>
+                              <div key={p.dataKey} style={{ color: p.color, fontWeight: 500 }}>{p.name}: {fmtCell(p.value)}</div>
                             ))}
                           </div>
                         )
                       }}
                     />
-                    <Legend wrapperStyle={{ fontSize: 11 }} formatter={v => <span style={{ color: '#8BA0BF' }}>{v}</span>} />
+                    <Legend wrapperStyle={{ fontSize: 11 }} formatter={v => <span style={{ color: 'var(--ab-mut)' }}>{v}</span>} />
                     {selected.map(({ e }, i) => (
                       <Bar key={e.id} dataKey={`e${i}`} name={labelOf(e)} fill={SERIES[i]} radius={[4, 4, 0, 0]} maxBarSize={28} />
                     ))}

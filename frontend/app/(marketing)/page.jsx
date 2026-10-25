@@ -1,6 +1,5 @@
 import Link from 'next/link'
 import HeroDemo from '@/components/landing/HeroDemo'
-import './landing.css'
 
 const GITHUB = 'https://github.com/anshunigam-trigger/automl-workbench'
 
@@ -13,14 +12,12 @@ const STATS = [
 
 export default function LandingPage() {
   return (
-    <div className="lp">
-
-      {/* ── Navbar ── */}
+    <>
       <header className="lp-nav">
         <div className="lp-wrap lp-nav-inner">
           <Link href="/" className="lp-brand">
-            <div className="lp-logo">A</div>
-            <div className="lp-brand-name">Auto<span>Bench</span></div>
+            <span className="lp-logo">A</span>
+            <span className="lp-brand-name">AutoBench</span>
           </Link>
 
           <nav className="lp-links" aria-label="Primary">
@@ -30,40 +27,37 @@ export default function LandingPage() {
           </nav>
 
           <div className="lp-nav-cta">
-            <a className="btn lp-gh" href={GITHUB} target="_blank" rel="noreferrer">GitHub</a>
-            <Link href="/dashboard" className="btn primary">Open app →</Link>
+            <a className="lp-btn line sm lp-gh" href={GITHUB} target="_blank" rel="noreferrer">GitHub</a>
+            <Link href="/dashboard" className="lp-btn solid sm">Open app →</Link>
           </div>
         </div>
       </header>
 
       <main>
-        {/* ── Hero ── */}
         <section className="lp-wrap lp-hero">
           <div className="lp-eyebrow">No-code AutoML</div>
 
-          <h1 className="lp-title fade-up">
-            Find the best model<br />
-            <span className="grad">before lunch.</span>
+          <h1 className="lp-title">
+            Find the best<br />
+            model before<br />
+            lunch.
           </h1>
 
-          <p className="lp-sub fade-up-1">
+          <p className="lp-sub">
             Upload a CSV, choose your algorithms, and AutoBench cleans the data, trains every
             model and ranks them with real metrics. No code, no notebook.
           </p>
 
-          <div className="lp-cta fade-up-2">
-            <Link href="/experiments" className="btn primary">Start an experiment →</Link>
-            <a className="btn" href={GITHUB} target="_blank" rel="noreferrer">View source</a>
+          <div className="lp-cta">
+            <Link href="/experiments" className="lp-btn solid">Start an experiment →</Link>
+            <a className="lp-btn line" href={GITHUB} target="_blank" rel="noreferrer">View source</a>
           </div>
 
-          <div className="fade-up-3">
-            <HeroDemo />
-          </div>
+          <HeroDemo />
         </section>
 
-        {/* ── Stat strip ── */}
-        <section className="lp-wrap" aria-label="At a glance">
-          <div className="lp-stats">
+        <section className="lp-band" aria-label="At a glance">
+          <div className="lp-wrap lp-stats">
             {STATS.map(s => (
               <div key={s.label} className="lp-stat">
                 <div className="lp-stat-val">{s.value}</div>
@@ -75,6 +69,6 @@ export default function LandingPage() {
 
         {/* Part 2: How it works, Features, Roadmap, closing CTA, footer */}
       </main>
-    </div>
+    </>
   )
 }
