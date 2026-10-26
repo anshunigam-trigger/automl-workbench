@@ -1,27 +1,53 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useMemo } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { Plus, Search, Upload, FileSpreadsheet, ArrowRight } from 'lucide-react'
-import { Page, Card, Tile, Empty, CountUp, toast, list, rise } from '@/components/ui'
+import { useExperiments } from '@/lib/useExperiments'
+import { timeAgo, formatScore, modelName } from '@/lib/format'
+import { setPendingUpload } from '@/lib/pendingUpload'
+import { Page, Card, Tile, Empty, ErrorState, CountUp, toast, list, rise } from '@/components/ui'
 
-const DATASETS = [
-  { name: 'telecom_churn.csv',  rows: 7043, cols: 21, numeric: 8,  categorical: 13, task: 'Classification', target: 'Churn',     uploaded: '2 hrs ago',  experiments: 3, bestScore: '81.55%', size: '1.2 MB' },
-  { name: 'titanic.csv',        rows: 891,  cols: 12, numeric: 6,  categorical: 6,  task: 'Classification', target: 'Survived',  uploaded: '1 day ago',  experiments: 1, bestScore: '79.12%', size: '89 KB'  },
-  { name: 'house_prices.csv',   rows: 1460, cols: 81, numeric: 36, categorical: 45, task: 'Regression',     target: 'SalePrice', uploaded: '3 days ago', experiments: 2, bestScore: '89.23%', size: '450 KB' },
-  { name: 'iris.csv',           rows: 150,  cols: 5,  numeric: 4,  categorical: 1,  task: 'Classification', target: 'species',   uploaded: '1 week ago', experiments: 1, bestScore: '96.67%', size: '4.5 KB' },
-  { name: 'boston_housing.csv', rows: 506,  cols: 14, numeric: 13, categorical: 1,  task: 'Regression',     target: 'medv',      uploaded: '2 wks ago',  experiments: 1, bestScore: '85.44%', size: '35 KB'  },
-  { name: 'customer_seg.csv',   rows: 2240, cols: 29, numeric: 14, categorical: 15, task: 'Classification', target: 'Response',  uploaded: '3 wks ago',  experiments: 0, bestScore: '—',      size: '280 KB' },
-]
+// A "dataset" here is every distinct file name that has been used in an experiment.
+// Everything shown is derived from saved experiments, so nothing is made up.
+function deriveDatasets(experiments) {
+  const map = new Map()
+  experiments.forEach(e => {
+    const d = map.get(e.dataset) ?? { name: e.dataset, rows: null, targets: new Set(), tasks: new Set(), runs: 0, lastAt: null, best: {} }
+    d.runs += 1
+    if (e.rows != null) d.rows = Math.max(d.rows ?? 0, e.rows)
+    d.targets.add(e.target)
+    d.tasks.add(e.task)
+    if (!d.lastAt || new Date(e.created_at) > new Date(d.lastAt)) d.lastAt = e.created_at
+    if (e.best) {
+      const sc = e.task === 'classification' ? e.best.accuracy : e.best.r2
+      if (sc != null && (!d.best[e.task] || sc > d.best[e.task].sc)) d.best[e.task] = { sc, e }
+    }
+    map.set(e.dataset, d)
+  })
+  return [...map.values()].sort((a, b) => new Date(b.lastAt) - new Date(a.lastAt))
+}
 
 export default function DatasetsPage() {
-  const [filter, setFilter]   = useState('All')
-  const [search, setSearch]   = useState('')
-  const [loading, setLoading] = useState(true)
-  const [drag, setDrag]       = useState('idle') // idle | over | bad
+  const { experiments, loading, error, refetch } = useExperiments()
+  const [filter, setFilter] = useState('All')
+  const [search, setSearch] = useState('')
+  const [drag, setDrag]     = useState('idle') // idle | over | bad
   const router = useRouter()
+
+  const datasets = useMemo(() => deriveDatasets(experiments), [experiments])
+
+  const shown = datasets.filter(d =>
+    (filter === 'All' || d.tasks.has(filter.toLowerCase())) &&
+    d.name.toLowerCase().includes(search.trim().toLowerCase())
+  )
+
+  const totalRows = datasets.reduce((s, d) => s + (d.rows ?? 0), 0)
+  const bestAcc = experiments
+    .filter(e => e.task === 'classification' && e.best?.accuracy != null)
+    .reduce((m, e) => Math.max(m, e.best.accuracy), 0)
 
   const onDrop = e => {
     e.preventDefault()
@@ -34,48 +60,35 @@ export default function DatasetsPage() {
       return
     }
     setDrag('idle')
-    toast(`${f.name} noted. Pick it again in New experiment.`, 'info')
+    setPendingUpload(f)
     router.push('/experiments')
   }
-
-  // Simulates a real database fetch — replace with actual API call in Phase 5
-  useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 1500)
-    return () => clearTimeout(timer)
-  }, [])
-
-  const list_ = DATASETS.filter(d => {
-    const mf = filter === 'All' || d.task === filter
-    const ms = d.name.toLowerCase().includes(search.toLowerCase())
-    return mf && ms
-  })
 
   return (
     <Page
       title="Datasets"
-      sub="Manage your uploaded datasets and launch new experiments."
+      sub="Files you’ve used in experiments, and how each one performed."
       action={<Link href="/experiments" className="ab-btn dark fit"><Plus size={16} /> New experiment</Link>}
     >
-      {/* Stats */}
+      {error && <ErrorState text={error} onRetry={refetch} />}
+
       <motion.div className="ab-kpis" variants={list}>
-        <Tile hot label="Datasets"><CountUp to={DATASETS.length} /></Tile>
-        <Tile label="Experiments"><CountUp to={DATASETS.reduce((a, d) => a + d.experiments, 0)} /></Tile>
-        <Tile label="Total rows"><CountUp to={DATASETS.reduce((a, d) => a + d.rows, 0)} /></Tile>
-        <Tile label="Best accuracy">{DATASETS.length > 0 ? <CountUp to={96.67} decimals={2} suffix="%" /> : '—'}</Tile>
+        <Tile hot label="Datasets">{loading ? '—' : <CountUp to={datasets.length} />}</Tile>
+        <Tile label="Experiments">{loading ? '—' : <CountUp to={experiments.length} />}</Tile>
+        <Tile label="Total rows">{loading ? '—' : <CountUp to={totalRows} />}</Tile>
+        <Tile label="Best accuracy">{loading || !bestAcc ? '—' : <CountUp to={bestAcc * 100} decimals={2} suffix="%" />}</Tile>
       </motion.div>
 
-      {/* Upload zone */}
       <Card className={`ab-upload ${drag}`} onDragOver={e => { e.preventDefault(); setDrag('over') }} onDragLeave={() => setDrag('idle')} onDrop={onDrop}>
         <div className="ds-ic"><Upload size={20} /></div>
         <div>
-          <b className="ab-h">{drag === 'over' ? 'Drop it here' : drag === 'bad' ? 'That isn’t a CSV file' : DATASETS.length === 0 ? 'Upload your first dataset' : 'Upload a new dataset'}</b>
-          <div className="ab-lbl">{drag === 'bad' ? 'Only .csv files are supported' : 'Drag &amp; drop a CSV · Any size · Auto-preprocessed'}</div>
+          <b className="ab-h">{drag === 'over' ? 'Drop it here' : drag === 'bad' ? 'That isn’t a CSV file' : 'Add a dataset'}</b>
+          <div className="ab-lbl">{drag === 'bad' ? 'Only .csv files are supported' : 'Drop a CSV here to start an experiment with it'}</div>
         </div>
         <Link href="/experiments" className="ab-btn dark fit"><Plus size={16} /> New experiment</Link>
       </Card>
 
-      {/* Search + filter — only useful once there's data to search through */}
-      {!loading && DATASETS.length > 0 && (
+      {!loading && datasets.length > 0 && (
         <Card>
           <div className="ab-row">
             <label className="ab-search">
@@ -91,56 +104,48 @@ export default function DatasetsPage() {
         </Card>
       )}
 
-      {/* Skeletons / empty states / cards */}
       {loading ? (
         <div className="ds-grid">
-          {[0, 1, 2].map(i => <div key={i} className="ab-card"><div className="ab-skel" style={{ height: 220, marginTop: 0 }} /></div>)}
+          {[0, 1, 2].map(i => <div key={i} className="ab-card"><div className="ab-skel" style={{ height: 200, marginTop: 0 }} /></div>)}
         </div>
-      ) : DATASETS.length === 0 ? (
-        <Empty title="No datasets yet" text="Upload your first CSV to start training models and comparing results." href="/experiments" cta="Upload your first dataset" />
-      ) : list_.length === 0 ? (
+      ) : !error && datasets.length === 0 ? (
+        <Empty title="No datasets yet" text="Datasets appear here after you run your first experiment." href="/experiments" cta="Start an experiment" />
+      ) : shown.length === 0 && datasets.length > 0 ? (
         <Card className="ab-empty">
-          <b>No datasets found</b>
+          <b>No datasets match</b>
           <p className="ab-lbl">Try a different search term or filter.</p>
         </Card>
       ) : (
         <motion.div className="ds-grid" variants={list} initial="hidden" animate="show">
-          {list_.map(d => (
-            <motion.div key={d.name} className="ab-card ds" variants={rise} whileHover={{ y: -4 }} transition={{ type: 'spring', stiffness: 400, damping: 26 }}>
-              <div className="ds-ic"><FileSpreadsheet size={20} /></div>
-              <div>
-                <div className="ds-name">{d.name}</div>
-                <div className="ab-lbl">target → <b style={{ color: 'var(--ab-acc)' }}>{d.target}</b></div>
-              </div>
-
-              <div className="ds-two">
-                <div className="ab-mini"><b>{d.rows.toLocaleString()}</b><small style={{ margin: 0 }}>Rows</small></div>
-                <div className="ab-mini"><b>{d.cols}</b><small style={{ margin: 0 }}>Columns</small></div>
-              </div>
-
-              <div>
-                <div className="ab-row ab-lbl" style={{ fontSize: 11, marginBottom: 5 }}>
-                  <span># {d.numeric} numeric</span><span>Aa {d.categorical} categorical</span>
+          {shown.map(d => {
+            const top = d.best.classification ?? d.best.regression
+            return (
+              <motion.div key={d.name} className="ab-card ds" variants={rise} whileHover={{ y: -4 }} transition={{ type: 'spring', stiffness: 400, damping: 26 }}>
+                <div className="ds-ic"><FileSpreadsheet size={20} /></div>
+                <div>
+                  <div className="ds-name" title={d.name}>{d.name}</div>
+                  <div className="ab-lbl">target → <b style={{ color: 'var(--ab-acc-ink)' }}>{[...d.targets].join(', ')}</b></div>
                 </div>
-                <div className="ds-comp">
-                  <div className="dk" style={{ width: `${d.numeric / d.cols * 100}%` }} />
-                  <div className="hz" style={{ width: `${d.categorical / d.cols * 100}%` }} />
+
+                <div className="ds-two">
+                  <div className="ab-mini"><b>{d.rows != null ? d.rows.toLocaleString() : '—'}</b><small style={{ margin: 0 }}>Rows</small></div>
+                  <div className="ab-mini"><b>{d.runs}</b><small style={{ margin: 0 }}>Experiment{d.runs === 1 ? '' : 's'}</small></div>
                 </div>
-              </div>
 
-              <div className="ds-foot">
-                <span className={`ab-chip ${d.task === 'Classification' ? 'dk' : 'hz'}`}>{d.task}</span>
-                <Link href="/experiments" className="ab-link">Use <ArrowRight size={13} style={{ verticalAlign: -2 }} /></Link>
-              </div>
+                <div className="ds-foot">
+                  <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                    {[...d.tasks].map(t => <span key={t} className={`ab-chip ${t === 'classification' ? 'dk' : 'hz'}`}>{t}</span>)}
+                  </span>
+                  <Link href="/experiments" className="ab-link">Use again <ArrowRight size={13} style={{ verticalAlign: -2 }} /></Link>
+                </div>
 
-              <div className="ds-meta">
-                <span>{d.uploaded} · {d.size}</span>
-                {d.experiments > 0
-                  ? <span>{d.experiments} runs · best <b>{d.bestScore}</b></span>
-                  : <span>No runs yet</span>}
-              </div>
-            </motion.div>
-          ))}
+                <div className="ds-meta">
+                  <span>Last run {timeAgo(d.lastAt)}</span>
+                  {top ? <span>{modelName(top.e.best.id, top.e.task)} · <b>{formatScore(top.e.best, top.e.task)}</b></span> : <span>No results</span>}
+                </div>
+              </motion.div>
+            )
+          })}
         </motion.div>
       )}
     </Page>

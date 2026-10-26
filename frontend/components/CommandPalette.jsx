@@ -19,11 +19,20 @@ export default function CommandPalette({ open, onClose }) {
 
   useEffect(() => { if (open) { setQ(''); setI(0) } }, [open])
 
+  // Freeze the page behind the palette while it's open
+  useEffect(() => {
+    if (!open) return
+    const el = document.documentElement
+    const prev = el.style.overflow
+    el.style.overflow = 'hidden'
+    return () => { el.style.overflow = prev }
+  }, [open])
+
   // Everything searchable, built from the same data as the pages
   const all = useMemo(() => {
     const pages = NAV.map(n => ({ group: 'Pages', key: n.href, label: n.label, hint: n.href, Icon: n.Icon, href: n.href, text: n.label }))
     const exps = experiments.map(e => ({
-      group: 'Experiments', key: `e${e.id}`, label: e.dataset, Icon: FlaskConical, href: '/reports',
+      group: 'Experiments', key: `e${e.id}`, label: e.dataset, Icon: FlaskConical, href: `/reports/${e.id}`,
       hint: `#${e.id} · ${e.best ? modelName(e.best.id, e.task) : 'no results'} · ${formatScore(e.best, e.task)}`,
       text: `${e.dataset} ${e.target} ${e.task} ${e.best ? modelName(e.best.id, e.task) : ''} ${e.id}`,
     }))

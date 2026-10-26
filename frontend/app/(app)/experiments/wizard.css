@@ -1,0 +1,48 @@
+/* New experiment wizard (wz-*). Shared pieces live in ui.css */
+.wz-steps{list-style:none;margin:0 0 24px;padding:0;display:flex;gap:8px;flex-wrap:wrap}
+.wz-steps li{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ab-mut)}
+.wz-steps li:not(:last-child)::after{content:"";width:28px;height:1px;background:var(--ab-line);margin-left:4px}
+.wz-dot{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-size:12px;font-weight:700;background:var(--ab-inset);border:1px solid var(--ab-line);transition:background-color .25s,color .25s}
+.wz-steps .now{color:var(--ab-ink);font-weight:600}
+.wz-steps .now .wz-dot{background:var(--ab-acc);border-color:var(--ab-acc);color:#0F0F0E}
+.wz-steps .done .wz-dot{background:var(--ab-dark);border-color:var(--ab-dark);color:var(--ab-on)}
+
+.wz-drop{display:flex;flex-direction:column;align-items:center;text-align:center;gap:4px;padding:44px 20px;border:1px dashed var(--ab-mut);border-radius:var(--ab-r);transition:border-color .2s,background-color .2s,transform .2s}
+.wz-drop b{font-size:16px}.wz-drop p{margin:0 0 14px}
+.wz-drop.over{border-style:solid;border-color:var(--ab-acc);background:color-mix(in srgb,var(--ab-acc) 8%,transparent);transform:scale(1.005)}
+.wz-drop.bad{border-color:var(--ab-bad)}
+
+.wz-pane{display:flex;flex-direction:column;gap:16px}
+.wz-file{display:flex;align-items:center;gap:12px;padding:12px 14px;border:1px solid var(--ab-line);border-radius:var(--ab-r);background:var(--ab-inset)}
+.wz-file div{display:flex;flex-direction:column;min-width:0}
+.wz-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr);gap:20px}
+.wz-field{display:flex;flex-direction:column;gap:6px;font-size:13px;min-width:0}
+.wz-field>span{font-weight:600}
+.wz-field small{color:var(--ab-mut);font-size:12px}
+.wz-field select{height:40px;padding:0 12px;border:1px solid var(--ab-line);border-radius:var(--ab-r-sm);background:var(--ab-card);color:var(--ab-ink);font:inherit}
+.wz-tasks{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.wz-task,.wz-model{display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:12px 14px;text-align:left;border:1px solid var(--ab-line);border-radius:var(--ab-r);background:var(--ab-card);color:var(--ab-ink);font:inherit;cursor:pointer;transition:border-color .2s,background-color .2s,transform .15s}
+.wz-task small,.wz-model small{color:var(--ab-mut);font-size:12px;font-weight:400}
+.wz-task:hover,.wz-model:hover{border-color:var(--ab-mut)}
+.wz-task:active,.wz-model:active{transform:scale(.98)}
+.wz-task.on,.wz-model.on{border-color:var(--ab-acc);background:color-mix(in srgb,var(--ab-acc) 7%,var(--ab-card))}
+.wz-models{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px}
+.wz-model{flex-direction:row;align-items:flex-start;gap:12px}
+.wz-model>span:last-child{display:flex;flex-direction:column;min-width:0}
+.wz-check{flex:none;width:18px;height:18px;margin-top:2px;border-radius:5px;border:1px solid var(--ab-mut);display:grid;place-items:center;color:#0F0F0E}
+.wz-model.on .wz-check{background:var(--ab-acc);border-color:var(--ab-acc)}
+.wz-tgt{color:var(--ab-acc-ink)!important}
+.wz-actions{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;margin-top:8px}
+
+.wz-train{display:flex;flex-direction:column;gap:14px;padding:8px 0}
+.wz-trainhead{display:flex;align-items:center;gap:12px}
+.wz-spin{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;background:color-mix(in srgb,var(--ab-acc) 14%,transparent);color:var(--ab-acc-ink)}
+.wz-trainhead>div{display:flex;flex-direction:column}
+.wz-bar{position:relative;height:6px;border-radius:99px;background:var(--ab-inset);overflow:hidden}
+.wz-bar i{position:absolute;top:0;bottom:0;left:0;width:35%;border-radius:99px;background:var(--ab-acc);animation:wz-slide 1.3s ease-in-out infinite}
+@keyframes wz-slide{from{transform:translateX(-100%)}to{transform:translateX(300%)}}
+.wz-train p{margin:0}
+.wz-log{max-height:220px;overflow:auto;padding:12px 14px;border:1px solid var(--ab-line);border-radius:var(--ab-r);background:var(--ab-inset);font-family:var(--ab-mono);font-size:12px;line-height:1.7}
+.wz-log span{color:var(--ab-mut);margin-right:12px}
+
+@media (max-width:760px){.wz-grid,.wz-tasks{grid-template-columns:1fr}.wz-steps li:not(:last-child)::after{display:none}}

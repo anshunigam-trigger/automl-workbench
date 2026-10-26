@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Download, ChevronDown } from 'lucide-react'
+import Link from 'next/link'
+import { Download, ChevronDown, ArrowUpRight } from 'lucide-react'
 import { BarChart, Bar, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import { useExperiments } from '@/lib/useExperiments'
 import { analyzeExperiment } from '@/lib/analyze'
@@ -191,7 +192,7 @@ export default function ReportsPage() {
                   {a.weak && <span className="ab-chip warn">Weak fit</span>}
                   <span className={`ab-chip ${isCls ? 'dk' : 'hz'}`}>{e.task}</span>
                   <div style={{ textAlign: 'right' }}>
-                    <b style={{ color: 'var(--ab-acc)' }}>{formatScore(a.best, e.task)}</b>
+                    <b style={{ color: 'var(--ab-acc-ink)' }}>{formatScore(a.best, e.task)}</b>
                     <div className="ab-lbl">{a.best?.name ?? '—'}</div>
                   </div>
                   <motion.span animate={{ rotate: open ? 180 : 0 }} style={{ display: 'grid' }}><ChevronDown size={18} /></motion.span>
@@ -251,7 +252,8 @@ export default function ReportsPage() {
                           </div>
                         )}
 
-                        <div style={{ marginTop: 14 }}>
+                        <div style={{ marginTop: 14, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                          <Link href={`/reports/${e.id}`} className="ab-btn sm dark"><ArrowUpRight size={14} /> Open run page</Link>
                           <button className="ab-btn sm" onClick={() => { downloadCsv(`experiment-${e.id}.csv`, rowsFor(e, a)); toast(`Experiment #${e.id} exported`, 'success') }}>
                             <Download size={14} /> Export this experiment
                           </button>

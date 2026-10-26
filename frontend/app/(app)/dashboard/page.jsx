@@ -5,12 +5,14 @@ import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Plus, Upload, Zap, Search, SlidersHorizontal, MoreHorizontal,
-  FileSpreadsheet, FlaskConical, Database, Layers, Timer, BarChart3,
+  FileSpreadsheet, FlaskConical, Database, Layers, Timer, FileBarChart, Download, GitCompare,
 } from 'lucide-react'
 import { useExperiments } from '@/lib/useExperiments'
 import { checkHealth } from '@/lib/api'
 import { formatScore, modelName, seconds } from '@/lib/format'
-import { Page, CountUp, list, rise, ease, ErrorState } from '@/components/ui'
+import { downloadCsv } from '@/lib/exportCsv'
+import { flattenRuns, runRecord } from '@/lib/runs'
+import { Page, CountUp, list, rise, ease, ErrorState, toast } from '@/components/ui'
 import './dashboard.css'
 
 const PER_PAGE = 6
@@ -109,6 +111,17 @@ export default function DashboardPage() {
   const toggleAll = () => setPicked(p => allPicked
     ? p.filter(id => !rows.some(e => e.id === id))
     : [...new Set([...p, ...rows.map(e => e.id)])])
+  // Bulk actions on the ticked experiments
+  const pickedExps = experiments.filter(e => picked.includes(e.id))
+  const winners    = pickedExps.filter(e => e.best)
+  const sameTask   = new Set(winners.map(e => e.task)).size === 1
+  const canCompare = winners.length >= 2 && sameTask
+  const compareHref = `/compare?runs=${winners.map(e => `${e.id}-${e.best.id}`).join(',')}`
+  const exportPicked = () => {
+    const recs = flattenRuns(pickedExps).map(runRecord)
+    downloadCsv(`autobench-${pickedExps.length}-experiments.csv`, recs)
+    toast(`Exported ${recs.length} model runs from ${pickedExps.length} experiment${pickedExps.length === 1 ? '' : 's'}`, 'success')
+  }
   const toggleOne = id => setPicked(p => (p.includes(id) ? p.filter(x => x !== id) : [...p, id]))
 
   const live = apiUp === null
@@ -140,7 +153,7 @@ export default function DashboardPage() {
       }
       sub="Stay on top of your experiments, compare models, and track training status."
       action={
-        <Link href="/experiments" className="ab-btn dark fit" style={{ borderRadius: 14 }}>
+        <Link href="/experiments" className="ab-btn dark fit" style={{ borderRadius: 999 }}>
           <Zap size={16} /> Run experiment
         </Link>
       }
@@ -158,7 +171,7 @@ export default function DashboardPage() {
             {[
               [Upload, 'Upload a CSV', 'Pick the dataset to model'],
               [Layers, 'Choose algorithms', 'Compare several at once'],
-              [BarChart3, 'Read the results', 'See which model wins'],
+              [FileBarChart, 'Read the results', 'See which model wins'],
             ].map(([Icon, t, d], i) => (
               <motion.li key={t} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 + i * 0.12, duration: 0.4, ease }}>
                 <span className="db-actic"><Icon size={15} /></span>
@@ -189,8 +202,8 @@ export default function DashboardPage() {
             </div>
 
             <div className="db-two">
-              <Link href="/experiments" className="ab-btn dark" style={{ borderRadius: 16 }}><Plus size={15} /> New experiment</Link>
-              <Link href="/datasets" className="ab-btn" style={{ borderRadius: 16 }}><Upload size={15} /> Upload dataset</Link>
+              <Link href="/experiments" className="ab-btn dark" style={{ borderRadius: 999 }}><Plus size={15} /> New experiment</Link>
+              <Link href="/datasets" className="ab-btn" style={{ borderRadius: 999 }}><Upload size={15} /> Upload dataset</Link>
             </div>
 
             <div className="db-sep">
@@ -210,7 +223,7 @@ export default function DashboardPage() {
                       </div>
                       <div className="db-mscore">{(m.score * 100).toFixed(2)}%</div>
                       <div className="db-trunc db-faint">{m.dataset}</div>
-                      <div className="db-rank" style={{ color: i === 0 ? 'var(--ab-ok)' : 'var(--ab-acc)' }}>{i === 0 ? 'Best' : `#${i + 1}`}</div>
+                      <div className="db-rank" style={{ color: i === 0 ? 'var(--ab-ok)' : 'var(--ab-acc-ink)' }}>{i === 0 ? 'Best' : `#${i + 1}`}</div>
                     </div>
                   ))}
                 </div>
@@ -227,7 +240,7 @@ export default function DashboardPage() {
               <motion.i initial={{ width: 0 }} animate={{ width: `${loading ? 0 : avgAcc}%` }} transition={{ duration: 0.9, ease, delay: 0.5 }} />
             </div>
             <div className="ab-row db-mono">
-              <span style={{ color: 'var(--ab-acc)', fontWeight: 700 }}>{avgAcc ? avgAcc.toFixed(2) : '0.00'}% <span className="db-faint" style={{ fontWeight: 400 }}>avg</span></span>
+              <span style={{ color: 'var(--ab-acc-ink)', fontWeight: 700 }}>{avgAcc ? avgAcc.toFixed(2) : '0.00'}% <span className="db-faint" style={{ fontWeight: 400 }}>avg</span></span>
               <span className="db-faint">100% max</span>
             </div>
           </motion.div>
@@ -253,10 +266,10 @@ export default function DashboardPage() {
             <b className="db-h">Experiment activity</b>
             <div className="ab-lbl">Runs per month, last {MONTHS} months</div>
             <div className="ab-row" style={{ marginTop: 16 }}>
-              <b className="db-small">Classification vs Regression</b>
+              <b className="db-small">Classification vs other</b>
               <div className="db-legend">
                 <span><i className="db-stripe" />Classification</span>
-                <span><i className="db-solid" />Regression</span>
+                <span><i className="db-solid" />Other</span>
               </div>
             </div>
           </div>
@@ -318,6 +331,23 @@ export default function DashboardPage() {
           </div>
         </div>
 
+        <AnimatePresence initial={false}>
+          {picked.length > 0 && (
+            <motion.div className="db-bulk" initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} style={{ overflow: 'hidden' }}>
+              <div className="db-bulkin">
+                <b>{picked.length} selected</b>
+                <div className="db-bulkbtns">
+                  <button className="ab-btn sm" onClick={exportPicked}><Download size={13} /> Export CSV</button>
+                  {canCompare
+                    ? <Link href={compareHref} className="ab-btn sm dark"><GitCompare size={13} /> Compare best models</Link>
+                    : <button className="ab-btn sm" disabled title={winners.length < 2 ? 'Select at least two experiments with results' : 'Select experiments of the same task type'}><GitCompare size={13} /> Compare best models</button>}
+                  <button className="ab-link" onClick={() => setPicked([])}>Clear</button>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         <div className="ab-tw" style={{ marginTop: 0 }}>
           <table className="db-table">
             <thead>
@@ -336,7 +366,7 @@ export default function DashboardPage() {
               ) : rows.map((e, i) => (
                 <motion.tr key={e.id} initial={{ opacity: 0, x: -12 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.3, delay: 0.05 + i * 0.05 }}>
                   <td style={{ paddingLeft: 24 }}><input type="checkbox" checked={picked.includes(e.id)} onChange={() => toggleOne(e.id)} aria-label={`Select experiment ${e.id}`} /></td>
-                  <td className="db-mono" style={{ fontWeight: 700 }}>#{e.id}</td>
+                  <td className="db-mono" style={{ fontWeight: 700 }}><Link href={`/reports/${e.id}`} className="ab-link">#{e.id}</Link></td>
                   <td>
                     <div className="db-act">
                       <span className="db-actic"><FileSpreadsheet size={14} /></span>
@@ -357,7 +387,7 @@ export default function DashboardPage() {
                   </td>
                   <td className="db-mono db-faint">{fmtDate(e.created_at)}</td>
                   <td style={{ textAlign: 'right', paddingRight: 24 }}>
-                    <Link href="/reports" className="db-more" title="View report" aria-label="View report"><MoreHorizontal size={16} /></Link>
+                    <Link href={`/reports/${e.id}`} className="db-more" title="Open run" aria-label={`Open experiment ${e.id}`}><MoreHorizontal size={16} /></Link>
                   </td>
                 </motion.tr>
               ))}

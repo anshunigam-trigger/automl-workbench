@@ -8,11 +8,11 @@
 
 .db-grid{display:grid;gap:20px;grid-template-columns:repeat(3,minmax(0,1fr));margin-bottom:20px}
 .db-stack{display:flex;flex-direction:column;gap:20px;min-width:0}
-.db-card{background:var(--ab-card);border:1px solid var(--ab-line);border-radius:24px;padding:22px;box-shadow:0 1px 2px rgba(0,0,0,.04);min-width:0}
+.db-card{background:var(--ab-card);border:1px solid var(--ab-line);border-radius:var(--ab-r);padding:22px;box-shadow:0 1px 2px rgba(0,0,0,.04);min-width:0}
 .db-h{font-size:17px;font-weight:800}
 .db-small{font-size:13px;font-weight:700}
 .db-faint{color:var(--ab-mut);font-size:11px}
-.db-mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-variant-numeric:tabular-nums}
+.db-mono{font-family:var(--ab-mono);font-variant-numeric:tabular-nums}
 .db-trunc{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
 .db-eyebrow{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ab-mut)}
 .db-tag{font-size:11px;font-weight:600;padding:4px 10px;border-radius:99px;background:var(--ab-inset);color:var(--ab-ink);border:1px solid var(--ab-line)}
@@ -22,29 +22,30 @@
 .db-two{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:24px}
 .db-sep{margin-top:24px;padding-top:20px;border-top:1px solid var(--ab-line)}
 .db-three{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
-.db-mini{background:var(--ab-inset);border:1px solid var(--ab-line);border-radius:16px;padding:10px;min-width:0}
+.db-mini{background:var(--ab-inset);border:1px solid var(--ab-line);border-radius:var(--ab-r-sm);padding:10px;min-width:0}
 .db-minihead{display:flex;align-items:center;justify-content:space-between;gap:6px;font-size:11px}
 .db-mscore{font-size:13px;font-weight:800;margin:6px 0 2px;font-variant-numeric:tabular-nums}
 .db-rank{font-size:10px;font-weight:700;margin-top:4px}
 
 /* striped meter + bars */
 .db-meter{height:14px;border-radius:99px;background:var(--ab-inset);border:1px solid var(--ab-line);padding:2px;margin:14px 0 12px;overflow:hidden}
-.db-meter i{display:block;height:100%;border-radius:99px;background-color:#f97316;background-image:repeating-linear-gradient(45deg,rgba(255,255,255,.28) 0 4px,transparent 4px 8px)}
-.db-stripe{background-color:#f97316;background-image:repeating-linear-gradient(45deg,rgba(255,255,255,.28) 0 4px,transparent 4px 8px)}
+.db-meter i{display:block;height:100%;border-radius:99px;background-color:#FF6901;background-image:repeating-linear-gradient(45deg,rgba(255,255,255,.28) 0 4px,transparent 4px 8px)}
+.db-stripe{background-color:#FF6901;background-image:repeating-linear-gradient(45deg,rgba(255,255,255,.28) 0 4px,transparent 4px 8px)}
 .db-solid{background:var(--ab-dark)}
 
 /* bento tiles */
 .db-bento{display:grid;grid-template-columns:1fr 1fr;grid-auto-rows:1fr;gap:20px;min-width:0}
-.db-tile{position:relative;overflow:hidden;display:flex;flex-direction:column;justify-content:space-between;gap:14px;min-height:150px;padding:20px;background:var(--ab-card);border:1px solid var(--ab-line);border-radius:24px;box-shadow:0 1px 2px rgba(0,0,0,.04);min-width:0}
-.db-tile.hot{border:0;color:#fff;background:linear-gradient(135deg,#f97316,#ea580c);box-shadow:0 12px 28px rgba(249,115,22,.28)}
+.db-tile{position:relative;overflow:hidden;display:flex;flex-direction:column;justify-content:space-between;gap:14px;min-height:150px;padding:20px;background:var(--ab-card);border:1px solid var(--ab-line);border-radius:var(--ab-r);box-shadow:0 1px 2px rgba(0,0,0,.04);min-width:0}
+.db-tile.hot{border:0;color:#fff;background:linear-gradient(135deg,#FF7A1F,#EE5A00);box-shadow:0 12px 28px rgba(255,105,1,.28)}
 .db-tile.hot::after{content:"";position:absolute;right:-16px;bottom:-16px;width:112px;height:112px;border-radius:50%;background:rgba(255,255,255,.12);filter:blur(12px);pointer-events:none}
 .db-tilelbl{font-size:12px;font-weight:600;color:var(--ab-mut)}
-.db-tile.hot .db-tilelbl{color:rgba(255,255,255,.9)}
+.db-tile.hot .db-tilelbl{color:rgba(255,255,255,.92)}
+.db-tile.hot .db-val{color:#fff}
 .db-ic{flex:none;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:var(--ab-inset);color:var(--ab-mut)}
 .db-tile.hot .db-ic{background:rgba(255,255,255,.2);color:#fff}
 .db-val{font-size:30px;font-weight:800;letter-spacing:-.02em;font-variant-numeric:tabular-nums;white-space:nowrap}
 .db-chiprow{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:11px;color:var(--ab-mut)}
-.db-tile.hot .db-chiprow{color:rgba(255,255,255,.9)}
+.db-tile.hot .db-chiprow{color:rgba(255,255,255,.92)}
 .db-tile.hot .db-chip{background:rgba(0,0,0,.18);color:#fff}
 
 /* chart */
@@ -70,15 +71,15 @@
 .db-table td{padding:16px;border-bottom:1px solid var(--ab-line);vertical-align:middle}
 .db-table tbody tr:hover td{background:var(--ab-inset)}
 .db-table tbody tr:last-child td{border-bottom:0}
-.db-table input[type=checkbox]{accent-color:var(--ab-acc);width:15px;height:15px}
+.db-table input[type=checkbox]{accent-color:var(--ab-acc-ink);width:15px;height:15px}
 .db-act{display:flex;align-items:center;gap:10px}
-.db-actic{flex:none;width:28px;height:28px;border-radius:10px;display:grid;place-items:center;background:color-mix(in srgb,var(--ab-acc) 12%,transparent);color:var(--ab-acc)}
+.db-actic{flex:none;width:28px;height:28px;border-radius:10px;display:grid;place-items:center;background:color-mix(in srgb,var(--ab-acc) 12%,transparent);color:var(--ab-acc-ink)}
 .db-act b{font-size:13px}
 .db-more{display:inline-grid;place-items:center;width:28px;height:28px;border-radius:8px;color:var(--ab-mut)}
 .db-more:hover{background:var(--ab-line);color:var(--ab-ink)}
 .db-menuwrap{position:relative}
 .db-filter{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--ab-line);background:var(--ab-inset);color:var(--ab-ink);border-radius:12px;padding:8px 12px;font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;text-transform:capitalize}
-.db-menu{position:absolute;right:0;top:calc(100% + 6px);z-index:10;min-width:160px;background:var(--ab-card);border:1px solid var(--ab-line);border-radius:14px;padding:6px;box-shadow:0 14px 40px rgba(0,0,0,.18);display:flex;flex-direction:column}
+.db-menu{position:absolute;right:0;top:calc(100% + 6px);z-index:10;min-width:160px;background:var(--ab-card);border:1px solid var(--ab-line);border-radius:var(--ab-r-sm);padding:6px;box-shadow:0 14px 40px rgba(0,0,0,.18);display:flex;flex-direction:column}
 .db-menu button{border:0;background:none;color:var(--ab-ink);text-align:left;padding:8px 10px;border-radius:9px;font-family:inherit;font-size:12px;cursor:pointer;text-transform:capitalize}
 .db-menu button:hover{background:var(--ab-inset)}
 .db-menu button.on{background:var(--ab-dark);color:var(--ab-on)}
@@ -94,7 +95,7 @@
 /* Onboarding (no experiments yet) */
 .db-start{display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-bottom:16px;border:1px dashed color-mix(in srgb,var(--ab-acc) 50%,var(--ab-line))}
 .db-steps{list-style:none;margin:0;padding:0;display:flex;gap:12px;flex-wrap:wrap;flex:1}
-.db-steps li{flex:1;min-width:170px;display:flex;gap:10px;align-items:flex-start;padding:12px;border-radius:16px;background:var(--ab-inset)}
+.db-steps li{flex:1;min-width:170px;display:flex;gap:10px;align-items:flex-start;padding:12px;border-radius:var(--ab-r-sm);background:var(--ab-inset)}
 .db-steps .db-actic{width:32px;height:32px;border-radius:12px}
 .db-steps small{display:block;color:var(--ab-mut);font-size:12px;margin-top:2px}
 
@@ -102,8 +103,14 @@
 .db-actic{transition:transform .25s cubic-bezier(.34,1.56,.64,1)}
 .db-table tbody tr:hover .db-actic{transform:rotate(-8deg) scale(1.12)}
 .db-more svg{transition:transform .2s}.db-more:hover svg{transform:scale(1.25)}
-.db-mini:hover{border-color:var(--ab-acc)}
+.db-mini:hover{border-color:var(--ab-acc-ink)}
 .db-tile .db-ic{transition:transform .3s cubic-bezier(.34,1.56,.64,1)}
 .db-tile:hover .db-ic{transform:rotate(15deg) scale(1.15)}
 .db-col:hover small{color:var(--ab-ink)}
 .db-pg{transition:transform .15s,background-color .2s}.db-pg:active:not(:disabled){transform:scale(.94)}
+
+.db-pg,.db-filter,.db-tag,.db-pill,.db-chip{border-radius:999px}
+
+/* Bulk action bar */
+.db-bulkin{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:10px 20px;background:var(--ab-inset);border-bottom:1px solid var(--ab-line);font-size:13px}
+.db-bulkbtns{display:flex;align-items:center;gap:8px;flex-wrap:wrap}

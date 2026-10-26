@@ -19,11 +19,21 @@ export function CountUp({ to, decimals = 0, suffix = '' }) {
 }
 
 // Page wrapper: staggered entrance + heading row
-export function Page({ title, sub, action, children }) {
+export function Page({ title, sub, action, crumbs, children }) {
   return (
     <motion.div className="page-content" variants={list} initial="hidden" animate="show">
       <motion.header className="ab-head" variants={rise}>
         <div>
+          {crumbs && (
+            <nav className="ab-crumbs" aria-label="Breadcrumb">
+              {crumbs.map((c, i) => (
+                <span key={c.label}>
+                  {c.href ? <Link href={c.href}>{c.label}</Link> : <span aria-current="page">{c.label}</span>}
+                  {i < crumbs.length - 1 && <i aria-hidden="true">/</i>}
+                </span>
+              ))}
+            </nav>
+          )}
           <h1 className="ab-title">{title}</h1>
           <p className="ab-sub">{sub}</p>
         </div>

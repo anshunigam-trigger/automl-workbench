@@ -1,351 +1,379 @@
 'use client'
 
-import { useState } from 'react'
+import { Suspense, useState, useMemo, useEffect } from 'react'
 import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Search, X, ArrowUpRight, Info, Download, Link2, Check, GitCompare } from 'lucide-react'
 import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
+  BarChart, Bar, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
+  ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
 } from 'recharts'
 import { useExperiments } from '@/lib/useExperiments'
-import { analyzeExperiment } from '@/lib/analyze'
-import { timeAgo, formatScore, rowScore, seconds, duration, TASK_STYLE } from '@/lib/format'
+import { downloadCsv } from '@/lib/exportCsv'
+import { timeAgo } from '@/lib/format'
+import { METRICS, winnerIndex, flattenRuns, runRecord, pctText, secText } from '@/lib/runs'
+import { Page, Card, Empty, ErrorState, toast } from '@/components/ui'
+import './compare.css'
 
-const MAX_PICKS = 4
-const SERIES    = ['#38BDF8', '#A78BFA', '#2DD4BF', '#FBBF24']   // one color per selected experiment
+const MAX = 4
+// Orange marks the baseline; the rest are neutrals so runs stay distinguishable without a rainbow
+const COLORS = ['#FF6901', 'var(--ab-ink)', '#83837A', '#B8B8B2']
+const TIP = { background: 'var(--ab-card)', border: '1px solid var(--ab-line)', borderRadius: 8, fontSize: 12 }
+const TICK = { fill: 'var(--ab-mut)', fontSize: 11 }
+const when = iso => { const d = new Date(iso); return isNaN(d) ? '—' : d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) }
 
-const labelOf = e => `${e.dataset.replace(/\.csv$/i, '')} #${e.id}`
+const isPct = m => m.text === pctText
+const isSec = m => m.text === secText
+const fmtDelta = (m, d) => {
+  const sign = d > 0 ? '+' : '−'
+  const a = Math.abs(d)
+  return isPct(m) ? `${sign}${(a * 100).toFixed(2)} pts` : isSec(m) ? `${sign}${a.toFixed(2)}s` : `${sign}${a.toFixed(3)}`
+}
+// Width of the little bar under each value: percentages use their own scale, others are relative to the largest run
+const barWidth = (m, v, vals) => {
+  if (v == null) return 0
+  if (isPct(m)) return Math.max(0, Math.min(100, v * 100))
+  const mx = Math.max(...vals.filter(x => x != null))
+  return mx > 0 ? Math.max(0, (v / mx) * 100) : 0
+}
 
-const pill = active => ({
-  padding: '6px 14px', borderRadius: 10, fontSize: 11, fontWeight: 600, cursor: 'pointer',
-  fontFamily: 'var(--sans)',
-  border: `1px solid ${active ? 'var(--ab-acc)' : 'var(--ab-line)'}`,
-  background: active ? 'color-mix(in srgb, var(--ab-acc) 10%, var(--ab-card))' : 'var(--ab-inset)',
-  color: active ? 'var(--ab-acc)' : 'var(--ab-mut)',
-})
+// ▲ better / ▼ worse than the baseline, in the direction that matters for each metric
+function Delta({ m, v, base }) {
+  if (v == null || base == null) return null
+  const d = v - base
+  if (d === 0) return <span className="cmp-d eq">same</span>
+  const good = m.better === 'high' ? d > 0 : d < 0
+  return <span className={`cmp-d ${good ? 'up' : 'dn'}`} title={good ? 'Better than the baseline' : 'Worse than the baseline'}>{good ? '▲' : '▼'} {fmtDelta(m, d)}</span>
+}
 
-const Dot = ({ color }) => (
-  <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: 2, background: color, marginRight: 6 }} />
-)
+function Compare() {
+  const { experiments, loading, error, refetch } = useExperiments()
+  const params = useSearchParams()
+  const [picked, setPicked] = useState(() => (params.get('runs') || '').split(',').filter(Boolean).slice(0, MAX))
+  const [query, setQuery] = useState('')
+  const [taskFilter, setTaskFilter] = useState('all')
+  const [tab, setTab] = useState('scores')
+  const [onlyDiffs, setOnlyDiffs] = useState(false)
 
-export default function ComparePage() {
-  const { experiments, loading, error } = useExperiments()
-  const [picked, setPicked]     = useState(null)      // null = "user hasn't chosen yet" → use the default pair
-  const [metric, setMetric]     = useState('score')   // 'score' | 'time'
-  const [diffOnly, setDiffOnly] = useState(false)
+  const runs = useMemo(() => flattenRuns(experiments), [experiments])
+  const byKey = useMemo(() => new Map(runs.map(r => [r.key, r])), [runs])
+  const chosen = picked.map(k => byKey.get(k)).filter(Boolean)
+  const task = chosen[0]?.task
 
-  const analyses = experiments.map(e => ({ e, a: analyzeExperiment(e) }))
+  // Keep the URL shareable (preserving Next's history state)
+  useEffect(() => {
+    window.history.replaceState(window.history.state, '', picked.length ? `/compare?runs=${picked.join(',')}` : '/compare')
+  }, [picked])
 
-  // Default selection: the newest experiment plus the next newest of the same task
-  const defaultIds = (() => {
-    if (!experiments.length) return []
-    const first   = experiments[0]
-    const partner = experiments.find(e => e.id !== first.id && e.task === first.task)
-    return partner ? [first.id, partner.id] : []
-  })()
+  const toggle = k => setPicked(p => (p.includes(k) ? p.filter(x => x !== k) : p.length >= MAX ? p : [...p, k]))
+  const makeBaseline = k => setPicked(p => [k, ...p.filter(x => x !== k)])
 
-  const ids      = picked ?? defaultIds
-  const selected = ids.map(id => analyses.find(x => x.e.id === id)).filter(Boolean)
-  const task     = selected[0]?.e.task ?? null
-
-  const toggle = id =>
-    setPicked(prev => {
-      const current = prev ?? defaultIds
-      if (current.includes(id)) return current.filter(x => x !== id)
-      return current.length < MAX_PICKS ? [...current, id] : current
-    })
-
-  // Why can't this experiment be picked? (null = it can)
-  const blockedReason = e => {
-    if (ids.includes(e.id)) return null
-    if (task && e.task !== task) return `Can't mix ${e.task} with ${task}: accuracy and R² are different scales`
-    if (ids.length >= MAX_PICKS) return `You can compare up to ${MAX_PICKS} experiments`
+  // Why a run can't be added right now (null = selectable)
+  const blocked = r => {
+    if (picked.includes(r.key)) return null
+    if (task && r.task !== task) return `Different task (${task} selected)`
+    if (picked.length >= MAX) return `Up to ${MAX} models`
     return null
   }
 
-  /* ── Summary table: attributes down the side, experiments across the top ── */
-  const sameDataset = new Set(selected.map(({ e }) => e.dataset)).size <= 1
+  const q = query.trim().toLowerCase()
+  const shown = runs.filter(r => (taskFilter === 'all' || r.task === taskFilter) && `${r.name} ${r.dataset} ${r.target}`.toLowerCase().includes(q))
 
-  const scoreOf = ({ a }) => a.best?.score ?? -Infinity
-  const bestIdx = selected.length > 1
-    ? selected.reduce((bi, s, i) => (scoreOf(s) > scoreOf(selected[bi]) ? i : bi), 0)
-    : -1
+  const ready = chosen.length >= 2
+  const metrics = task ? METRICS[task] : []
+  const primary = metrics[0]
+  const differs = fn => new Set(chosen.map(fn)).size > 1
+  const sameData = ready && !differs(r => r.dataset) && !differs(r => r.target)
 
-  const summaryRows = [
-    { label: 'Dataset',             values: selected.map(({ e }) => e.dataset) },
-    { label: 'Target column',       values: selected.map(({ e }) => e.target) },
-    { label: 'Rows',                values: selected.map(({ e }) => e.rows?.toLocaleString() ?? '—') },
-    { label: 'Models trained',      values: selected.map(({ a }) => String(a.models.length)) },
-    { label: 'Best model',          values: selected.map(({ a }) => a.best?.name ?? '—') },
-    { label: 'Best score',          values: selected.map(({ e, a }) => formatScore(a.best, e.task)), highlight: bestIdx },
-    { label: 'Fastest model',       values: selected.map(({ a }) => a.fastest?.name ?? '—') },
-    { label: 'Total training time', values: selected.map(({ a }) => duration(a.totalTime)) },
-    { label: 'Trained',             values: selected.map(({ e }) => timeAgo(e.created_at)) },
-  ]
-  const visibleRows = diffOnly ? summaryRows.filter(r => new Set(r.values).size > 1) : summaryRows
-
-  /* ── Matrix: one row per algorithm, one column per experiment ── */
-  const getVal = m => (m == null ? null : metric === 'score' ? m.score : m.time)
-  const better = (x, y) => (metric === 'score' ? x > y : x < y)   // best = highest score or lowest time
-  const fmtCell = v => (v == null ? '—' : metric === 'score' ? rowScore(task, v) : seconds(v))
-
-  const names = [...new Set(selected.flatMap(({ a }) => a.models.map(m => m.name)))]
-  const matrix = names.map(name => {
-    const vals    = selected.map(({ a }) => getVal(a.models.find(m => m.name === name)))
-    const present = vals.filter(v => v != null)
-    const best    = present.length > 1 ? present.reduce((b, v) => (better(v, b) ? v : b)) : null
-    return { name, vals, best }
-  })
-  const rowBest = r => {
-    const present = r.vals.filter(v => v != null)
-    if (!present.length) return Infinity
-    return metric === 'score' ? Math.max(...present) : Math.min(...present)
+  // Summary lines, all computed from the selected runs
+  const insights = []
+  if (ready) {
+    const pv = chosen.map(r => r.metrics[primary.key])
+    const tv = chosen.map(r => r.metrics.time)
+    const bi = winnerIndex(pv, primary.better)
+    const fi = winnerIndex(tv, 'low')
+    if (bi >= 0) insights.push(`${chosen[bi].name} has the highest ${primary.label} (${primary.text(pv[bi])})${bi > 0 && pv[0] != null ? `, ${fmtDelta(primary, pv[bi] - pv[0])} vs the baseline` : ''}.`)
+    if (fi >= 0) insights.push(`${chosen[fi].name} trained fastest (${secText(tv[fi])}).`)
+    if (bi >= 0 && fi >= 0 && bi !== fi && tv[fi] > 0 && tv[bi] != null) insights.push(`The best ${primary.label} took ${(tv[bi] / tv[fi]).toFixed(1)}× longer to train than the fastest model.`)
   }
-  matrix.sort((x, y) => (metric === 'score' ? rowBest(y) - rowBest(x) : rowBest(x) - rowBest(y)))
+  const hasMissing = ready && chosen.some(r => metrics.some(m => r.metrics[m.key] == null))
 
-  const chartData = names.map(name => {
-    const row = { name }
-    selected.forEach(({ a }, i) => {
-      const v = getVal(a.models.find(m => m.name === name))
-      row[`e${i}`] = v == null ? null : metric === 'score' ? Math.max(0, v) : v   // never draw a negative bar
-    })
-    return row
-  })
+  // Charts
+  const chartMetrics = metrics.filter(m => m.chart)
+  const scoresData = chartMetrics.map(m => ({
+    metric: m.label,
+    ...Object.fromEntries(chosen.map(r => [r.key, r.metrics[m.key] == null ? null : +(r.metrics[m.key] * 100).toFixed(2)])),
+  }))
+  const errorsData = task === 'regression'
+    ? ['rmse', 'mae'].map(k => ({ metric: k.toUpperCase(), ...Object.fromEntries(chosen.map(r => [r.key, r.metrics[k] ?? null])) }))
+    : []
+  const tradeData = ready
+    ? chosen.map((r, i) => ({ i, key: r.key, name: r.name, x: r.metrics.time, y: r.metrics[primary.key] == null ? null : isPct(primary) ? r.metrics[primary.key] * 100 : r.metrics[primary.key] }))
+        .filter(p => p.x != null && p.y != null)
+    : []
+  const tabs = [['scores', 'Scores']]
+  if (task === 'classification') tabs.push(['profile', 'Profile'])
+  if (tradeData.length >= 2) tabs.push(['tradeoff', 'Speed vs score'])
+  if (task === 'regression' && sameData) tabs.push(['errors', 'Errors'])
+  const active = tabs.some(([k]) => k === tab) ? tab : 'scores'
 
-  const ready = selected.length >= 2
+  const context = [
+    ['Dataset', r => r.dataset], ['Target', r => r.target], ['Task', r => r.task],
+    ['Rows', r => (r.rows != null ? r.rows.toLocaleString() : '—')],
+    ['Experiment', r => `#${r.expId}`], ['Trained', r => when(r.createdAt)],
+    ['Hyperparameters', () => 'Not recorded'], ['Random seed', () => 'Not recorded'], ['Evaluation split', () => 'Not recorded'],
+  ]
+  const contextRows = context.filter(([, fn]) => !onlyDiffs || differs(fn))
+
+  const exportCsv = () => { downloadCsv('autobench-comparison.csv', chosen.map(runRecord)); toast(`Exported ${chosen.length} models`, 'success') }
+  const copyLink = async () => {
+    try { await navigator.clipboard.writeText(window.location.href); toast('Link copied', 'success') }
+    catch { toast('Couldn’t copy the link', 'error') }
+  }
 
   return (
-    <div className="page-content">
-
-      {/* Header */}
-      <div style={{ marginBottom: 24 }}>
-        <h1 className="ab-title">Compare Experiments</h1>
-        <p className="ab-sub">Put experiments side by side to see what changed and what won.</p>
-      </div>
-
-      {error && <div className="error-bar">⚠ &nbsp;{error}</div>}
-
-      {/* Not enough data */}
-      {!loading && !error && experiments.length < 2 && (
-        <div className="card fade-up-1" style={{ textAlign: 'center', padding: '56px 24px', borderStyle: 'dashed' }}>
-          <div style={{ fontSize: 40, marginBottom: 12 }}>⚖️</div>
-          <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 6 }}>You need at least two experiments to compare</div>
-          <div style={{ fontSize: 13, color: 'var(--ab-mut)', marginBottom: 16 }}>
-            Run another experiment, ideally on the same dataset with different algorithms.
-          </div>
-          <Link href="/experiments" className="ab-btn dark">+ Run an experiment</Link>
+    <Page
+      title="Compare models"
+      sub={`Choose two to ${MAX} trained models of the same task type. The first one you pick is the baseline.`}
+      action={
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          <button className="ab-btn fit" onClick={copyLink} disabled={!chosen.length}><Link2 size={15} /> Copy link</button>
+          <button className="ab-btn dark fit" onClick={exportCsv} disabled={!ready}><Download size={15} /> Export CSV</button>
         </div>
-      )}
+      }
+    >
+      {error && <ErrorState text={error} onRetry={refetch} />}
 
-      {(loading || experiments.length >= 2) && (
-        <>
-          {/* Picker */}
-          <div className="card fade-up-1">
-            <div className="card-header">
-              <div>
-                <div className="card-title"><span className="card-title-icon">☑️</span>Choose experiments</div>
-                <div className="card-sub">Pick 2 to {MAX_PICKS} of the same task type · {ids.length} selected</div>
-              </div>
-              {ids.length > 0 && (
-                <button onClick={() => setPicked([])}
-                  style={{ background: 'none', border: 'none', color: 'var(--ab-acc)', fontSize: 11, cursor: 'pointer', fontWeight: 600 }}>
-                  Clear
-                </button>
-              )}
+      {!loading && !error && runs.length === 0 ? (
+        <Empty title="No trained models yet" text="Train a model first, then come back to compare results." href="/experiments" cta="Start an experiment" />
+      ) : (
+        <div className="cmp-layout">
+
+          {/* ── Picker ── */}
+          <aside className="ab-card cmp-picker" aria-label="Choose models">
+            <div className="ab-row"><b className="ab-h">Models</b><span className="ab-lbl">{picked.length} of {MAX} selected</span></div>
+            <label className="ab-search" style={{ marginTop: 12 }}>
+              <Search size={15} />
+              <input value={query} onChange={e => setQuery(e.target.value)} placeholder="Search model or dataset" aria-label="Search models" />
+            </label>
+            <div className="ab-pills" style={{ margin: '10px 0' }}>
+              {['all', 'classification', 'regression'].map(t => <button key={t} className={taskFilter === t ? 'on' : ''} onClick={() => setTaskFilter(t)}>{t}</button>)}
             </div>
 
-            <div style={{ maxHeight: 280, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 6 }}>
-              {loading
-                ? [0, 1, 2].map(i => <div key={i} className="skeleton" style={{ height: 46 }} />)
-                : analyses.map(({ e, a }) => {
-                    const on  = ids.includes(e.id)
-                    const why = blockedReason(e)
-                    const t   = TASK_STYLE[e.task]
+            <div className="cmp-list" role="group" aria-label="Models">
+              {loading ? [0, 1, 2, 3].map(i => <div key={i} className="ab-skel" style={{ height: 52 }} />)
+                : shown.length === 0 ? <p className="ab-lbl" style={{ padding: '16px 4px' }}>No models match.</p>
+                : shown.map(r => {
+                  const why = blocked(r)
+                  const idx = picked.indexOf(r.key)
+                  const on = idx >= 0
+                  const m0 = METRICS[r.task][0]
+                  return (
+                    <button key={r.key} type="button" className={`cmp-item${on ? ' on' : ''}`} disabled={!!why} aria-pressed={on} title={why || undefined}
+                            style={on ? { '--c': COLORS[idx] } : undefined} onClick={() => toggle(r.key)}>
+                      <span className="cmp-box">{on && <Check size={12} />}</span>
+                      <span className="cmp-it">
+                        <b>{r.name}{r.isWinner && <span className="ab-badge">BEST</span>}</b>
+                        <small>{r.dataset} · {timeAgo(r.createdAt)}</small>
+                        {why && <small className="cmp-why">{why}</small>}
+                      </span>
+                      <span className="db-mono cmp-sc">{m0.text(r.metrics[m0.key])}</span>
+                    </button>
+                  )
+                })}
+            </div>
+            {picked.length > 0 && <button className="ab-link" style={{ marginTop: 10 }} onClick={() => setPicked([])}>Clear selection</button>}
+          </aside>
+
+          {/* ── Workspace ── */}
+          <div className="cmp-main">
+            {chosen.length === 0 && (
+              <Card className="cmp-hint">
+                <div className="ab-emptyic"><GitCompare size={24} /></div>
+                <b>Select models to compare</b>
+                <p className="ab-lbl">Tick two to {MAX} models on the left. You’ll see metrics with differences from the baseline, charts, and what changed between runs.</p>
+              </Card>
+            )}
+            {chosen.length === 1 && <p className="ab-lbl" style={{ margin: '0 0 12px' }}>Select at least one more {task} model to see the comparison.</p>}
+
+            {chosen.length > 0 && (
+              <div className="cmp-cards">
+                <AnimatePresence initial={false}>
+                  {chosen.map((r, i) => {
+                    const pv = r.metrics[primary.key]
                     return (
-                      <button
-                        key={e.id} type="button" aria-pressed={on} disabled={!!why}
-                        title={why ?? undefined} onClick={() => toggle(e.id)}
-                        style={{
-                          display: 'flex', alignItems: 'center', gap: 12, width: '100%', textAlign: 'left',
-                          padding: '12px 14px', borderRadius: 14, fontFamily: 'var(--sans)', color: 'inherit',
-                          cursor: why ? 'not-allowed' : 'pointer', opacity: why ? 0.4 : 1,
-                          background: on ? 'color-mix(in srgb, var(--ab-acc) 10%, var(--ab-card))' : 'var(--ab-inset)',
-                          border: `1px solid ${on ? 'var(--ab-acc)' : 'var(--ab-line)'}`,
-                          transition: 'all 0.15s ease',
-                        }}
-                      >
-                        <span style={{
-                          width: 18, height: 18, borderRadius: 5, flexShrink: 0, display: 'grid', placeItems: 'center',
-                          fontSize: 10, fontWeight: 700, color: '#fff',
-                          background: on ? SERIES[ids.indexOf(e.id)] : 'transparent',
-                          border: `1px solid ${on ? 'transparent' : 'var(--ab-line)'}`,
-                        }}>{on && '✓'}</span>
-
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--ab-ink)' }}>{e.dataset}</div>
-                          <div style={{ fontSize: 11, color: 'var(--ab-mut)', fontFamily: 'var(--mono)', marginTop: 2 }}>
-                            #{e.id} · target: {e.target} · {e.rows?.toLocaleString() ?? '—'} rows · {timeAgo(e.created_at)}
-                          </div>
+                      <motion.div key={r.key} layout className="cmp-card" style={{ '--c': COLORS[i] }}
+                                  initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.96 }} transition={{ duration: 0.25 }}>
+                        <div className="ab-row" style={{ flexWrap: 'nowrap' }}>
+                          <span className="cmp-tag">{i === 0 ? 'Baseline' : `Run ${i + 1}`}</span>
+                          <button className="cmp-x" onClick={() => toggle(r.key)} aria-label={`Remove ${r.name}`}><X size={14} /></button>
                         </div>
-
-                        <span style={{ fontSize: 9, fontWeight: 700, padding: '3px 8px', borderRadius: 99, background: t.bg, color: t.color, border: `1px solid ${t.border}` }}>
-                          {t.label}
-                        </span>
-                        <span style={{ fontFamily: 'var(--mono)', fontSize: 12, fontWeight: 700, color: 'var(--ab-ok)', minWidth: 64, textAlign: 'right' }}>
-                          {formatScore(a.best, e.task)}
-                        </span>
-                      </button>
+                        <b className="cmp-name">{r.name}</b>
+                        <div className="ab-lbl cmp-sub">{r.dataset} · target {r.target}</div>
+                        <div className="cmp-score db-mono">{primary.text(pv)}</div>
+                        <div className="ab-lbl">{primary.label} {i > 0 && <Delta m={primary} v={pv} base={chosen[0].metrics[primary.key]} />}</div>
+                        <div className="cmp-links">
+                          <Link href={`/reports/${r.expId}`} className="ab-link">Run page <ArrowUpRight size={12} style={{ verticalAlign: -1 }} /></Link>
+                          {i > 0 && <button className="ab-link" onClick={() => makeBaseline(r.key)}>Make baseline</button>}
+                        </div>
+                      </motion.div>
                     )
                   })}
-            </div>
-          </div>
-
-          {!loading && !ready && (
-            <div style={{ textAlign: 'center', fontSize: 13, color: 'var(--text3)', padding: '32px 0' }}>
-              Select at least two experiments above to compare them.
-            </div>
-          )}
-
-          {ready && (
-            <>
-              {!sameDataset && (
-                <div style={{
-                  padding: '12px 18px', marginBottom: 16, borderRadius: 14, fontSize: 13, lineHeight: 1.6,
-                  background: 'color-mix(in srgb, #f59e0b 10%, var(--ab-card))', border: '1px solid color-mix(in srgb, #f59e0b 30%, transparent)', color: 'var(--ab-mut)',
-                }}>
-                  <b style={{ color: '#f59e0b' }}>⚠ Different datasets.</b> Score differences here reflect the
-                  data as much as the models. For a fair comparison, pick runs on the same dataset.
-                </div>
-              )}
-
-              {/* Summary */}
-              <div className="card fade-up-1">
-                <div className="card-header">
-                  <div>
-                    <div className="card-title"><span className="card-title-icon">📋</span>Summary</div>
-                    <div className="card-sub">Best value in the score row is highlighted</div>
-                  </div>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: 'var(--ab-mut)', cursor: 'pointer' }}>
-                    <input type="checkbox" checked={diffOnly} onChange={e => setDiffOnly(e.target.checked)} />
-                    Show only differences
-                  </label>
-                </div>
-
-                <div className="table-wrap">
-                  <table className="preview-table">
-                    <thead>
-                      <tr>
-                        <th></th>
-                        {selected.map(({ e }, i) => (
-                          <th key={e.id}><Dot color={SERIES[i]} />{labelOf(e)}</th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {visibleRows.length === 0 ? (
-                        <tr><td colSpan={selected.length + 1} style={{ textAlign: 'center', color: 'var(--ab-mut)', padding: 20 }}>
-                          These experiments are identical on every attribute above.
-                        </td></tr>
-                      ) : visibleRows.map(r => (
-                        <tr key={r.label}>
-                          <td style={{ color: 'var(--ab-mut)', fontSize: 11 }}>{r.label}</td>
-                          {r.values.map((v, i) => {
-                            const top = r.highlight === i
-                            return (
-                              <td key={i} style={{ color: top ? 'var(--ab-ok)' : 'var(--ab-ink)', fontWeight: top ? 700 : 500 }}>
-                                {v} {top && '🏆'}
-                              </td>
-                            )
-                          })}
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                </AnimatePresence>
               </div>
+            )}
 
-              {/* Per-algorithm comparison */}
-              <div className="card fade-up-2">
-                <div className="card-header" style={{ flexWrap: 'wrap', gap: 12 }}>
-                  <div>
-                    <div className="card-title"><span className="card-title-icon">📊</span>Algorithm by Algorithm</div>
-                    <div className="card-sub">
-                      {metric === 'score' ? 'Higher is better' : 'Lower is faster'} · ✓ marks the best result per algorithm
+            {ready && (
+              <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }}>
+                {!sameData && (
+                  <div className="ab-alert warn" role="status">
+                    <span className="ab-alert-ic"><Info size={15} /></span>
+                    <div className="ab-alert-tx"><b>These models were trained on different data</b><span>Scores from different datasets or targets are not directly comparable. Treat differences with caution.</span></div>
+                  </div>
+                )}
+
+                {insights.length > 0 && (
+                  <Card className="cmp-sum">
+                    <b className="ab-h">Summary</b>
+                    <ul>{insights.map((t, i) => <li key={i}>{t}</li>)}</ul>
+                  </Card>
+                )}
+
+                <Card>
+                  <div className="ab-row"><b className="ab-h">Metrics</b><span className="ab-lbl">▲ better · ▼ worse than the baseline · ↑ higher is better · ↓ lower is better</span></div>
+                  <div className="ab-tw">
+                    <table className="ab-table cmp-table">
+                      <thead>
+                        <tr><th>Metric</th>{chosen.map((r, i) => <th key={r.key}><span className="cmp-dot" style={{ background: COLORS[i] }} />{r.name}{i === 0 && <span className="cmp-base">baseline</span>}</th>)}</tr>
+                      </thead>
+                      <tbody>
+                        {metrics.map(m => {
+                          const vals = chosen.map(r => r.metrics[m.key])
+                          const win = winnerIndex(vals, m.better)
+                          return (
+                            <tr key={m.key}>
+                              <td style={{ fontWeight: 600 }}>{m.label} <span className="ab-lbl" title={m.better === 'high' ? 'Higher is better' : 'Lower is better'}>{m.better === 'high' ? '↑' : '↓'}</span></td>
+                              {vals.map((v, i) => (
+                                <td key={chosen[i].key}>
+                                  <div className="cmp-cell">
+                                    <span className="db-mono" style={win === i ? { fontWeight: 700, color: 'var(--ab-acc-ink)' } : undefined}>{m.text(v)}</span>
+                                    {win === i && <span className="ab-badge" style={{ margin: 0 }}>BEST</span>}
+                                    {i > 0 && <Delta m={m} v={v} base={vals[0]} />}
+                                  </div>
+                                  <div className="cmp-bar"><i style={{ width: `${barWidth(m, v, vals)}%`, background: COLORS[i] }} /></div>
+                                </td>
+                              ))}
+                            </tr>
+                          )
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                  <p className="ab-lbl" style={{ margin: '10px 0 0' }}>Missing values show as — and are never counted as zero.{hasMissing && ' Some metrics were not reported for every model.'}</p>
+                </Card>
+
+                <Card>
+                  <div className="ab-row">
+                    <b className="ab-h">Charts</b>
+                    <div className="ab-pills" role="tablist" aria-label="Chart type">
+                      {tabs.map(([k, label]) => <button key={k} role="tab" aria-selected={active === k} className={active === k ? 'on' : ''} onClick={() => setTab(k)}>{label}</button>)}
                     </div>
                   </div>
-                  <div style={{ display: 'flex', gap: 6 }}>
-                    <button style={pill(metric === 'score')} onClick={() => setMetric('score')}>
-                      {task === 'classification' ? 'Accuracy' : 'R²'}
-                    </button>
-                    <button style={pill(metric === 'time')} onClick={() => setMetric('time')}>Training time</button>
+                  <motion.div key={active} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.25 }} style={{ marginTop: 14 }}>
+                    {active === 'scores' && (
+                      <>
+                        <div className="ab-lbl" style={{ marginBottom: 8 }}>{task === 'classification' ? 'Scores (%)' : 'R² × 100'} from the backend’s evaluation.</div>
+                        <ResponsiveContainer width="100%" height={300}>
+                          <BarChart data={scoresData} margin={{ top: 8, right: 12, bottom: 0, left: -10 }}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="var(--ab-line)" vertical={false} />
+                            <XAxis dataKey="metric" tick={TICK} />
+                            <YAxis domain={task === 'classification' ? [0, 100] : ['auto', 'auto']} tick={TICK} />
+                            <Tooltip cursor={{ fill: 'var(--ab-inset)' }} contentStyle={TIP} />
+                            <Legend wrapperStyle={{ fontSize: 12 }} />
+                            {chosen.map((r, i) => <Bar key={r.key} dataKey={r.key} name={`${r.name} · ${r.dataset}`} fill={COLORS[i]} radius={[4, 4, 0, 0]} maxBarSize={36} animationDuration={800} />)}
+                          </BarChart>
+                        </ResponsiveContainer>
+                      </>
+                    )}
+                    {active === 'profile' && (
+                      <>
+                        <div className="ab-lbl" style={{ marginBottom: 8 }}>How each model balances accuracy, precision, recall and F1.</div>
+                        <ResponsiveContainer width="100%" height={340}>
+                          <RadarChart data={scoresData} outerRadius="72%">
+                            <PolarGrid stroke="var(--ab-line)" />
+                            <PolarAngleAxis dataKey="metric" tick={TICK} />
+                            <PolarRadiusAxis domain={[0, 100]} tick={{ fill: 'var(--ab-mut)', fontSize: 10 }} stroke="var(--ab-line)" />
+                            {chosen.map((r, i) => <Radar key={r.key} name={`${r.name} · ${r.dataset}`} dataKey={r.key} stroke={COLORS[i]} fill={COLORS[i]} fillOpacity={0.12} />)}
+                            <Tooltip contentStyle={TIP} />
+                            <Legend wrapperStyle={{ fontSize: 12 }} />
+                          </RadarChart>
+                        </ResponsiveContainer>
+                      </>
+                    )}
+                    {active === 'tradeoff' && (
+                      <>
+                        <div className="ab-lbl" style={{ marginBottom: 8 }}>Up and to the left is better: higher {primary.label} in less training time.</div>
+                        <ResponsiveContainer width="100%" height={320}>
+                          <ScatterChart margin={{ top: 10, right: 24, bottom: 10, left: 0 }}>
+                            <CartesianGrid stroke="var(--ab-line)" strokeDasharray="3 3" />
+                            <XAxis type="number" dataKey="x" name="Train time" unit="s" tick={TICK} />
+                            <YAxis type="number" dataKey="y" name={primary.label} unit={isPct(primary) ? '%' : ''} domain={['auto', 'auto']} tick={TICK} />
+                            <Tooltip cursor={{ strokeDasharray: '3 3' }} contentStyle={TIP} />
+                            <Legend wrapperStyle={{ fontSize: 12 }} />
+                            {tradeData.map(p => <Scatter key={p.key} name={p.name} data={[p]} fill={COLORS[p.i]} />)}
+                          </ScatterChart>
+                        </ResponsiveContainer>
+                      </>
+                    )}
+                    {active === 'errors' && (
+                      <>
+                        <div className="ab-lbl" style={{ marginBottom: 8 }}>Error in the target’s own units. Lower is better.</div>
+                        <ResponsiveContainer width="100%" height={300}>
+                          <BarChart data={errorsData} margin={{ top: 8, right: 12, bottom: 0, left: -10 }}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="var(--ab-line)" vertical={false} />
+                            <XAxis dataKey="metric" tick={TICK} />
+                            <YAxis tick={TICK} />
+                            <Tooltip cursor={{ fill: 'var(--ab-inset)' }} contentStyle={TIP} />
+                            <Legend wrapperStyle={{ fontSize: 12 }} />
+                            {chosen.map((r, i) => <Bar key={r.key} dataKey={r.key} name={`${r.name} · ${r.dataset}`} fill={COLORS[i]} radius={[4, 4, 0, 0]} maxBarSize={36} animationDuration={800} />)}
+                          </BarChart>
+                        </ResponsiveContainer>
+                      </>
+                    )}
+                  </motion.div>
+                </Card>
+
+                <Card>
+                  <div className="ab-row">
+                    <div><b className="ab-h">Configuration</b><div className="ab-lbl">What was recorded for each run. Differences are flagged.</div></div>
+                    <label className="cmp-check"><input type="checkbox" checked={onlyDiffs} onChange={e => setOnlyDiffs(e.target.checked)} /> Only differences</label>
                   </div>
-                </div>
-
-                <ResponsiveContainer width="100%" height={260}>
-                  <BarChart data={chartData} margin={{ top: 8, right: 12, bottom: 0, left: -10 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="var(--ab-line)" vertical={false} />
-                    <XAxis dataKey="name" interval={0} tick={{ fill: 'var(--ab-mut)', fontSize: 10 }} />
-                    <YAxis
-                      domain={metric === 'score' ? [0, 1] : [0, 'auto']}
-                      tick={{ fill: 'var(--ab-mut)', fontSize: 10 }}
-                      tickFormatter={v => metric === 'score'
-                        ? (task === 'classification' ? `${Math.round(v * 100)}%` : v.toFixed(1))
-                        : `${v}s`}
-                    />
-                    <Tooltip
-                      cursor={{ fill: 'color-mix(in srgb, var(--ab-ink) 4%, transparent)' }}
-                      content={({ active, payload, label }) => {
-                        if (!active || !payload?.length) return null
-                        return (
-                          <div style={{ background: 'var(--ab-card)', border: '1px solid var(--ab-line)', borderRadius: 12, padding: '10px 14px', fontSize: 11, fontFamily: 'var(--mono)', boxShadow: '0 8px 24px rgba(0,0,0,0.12)' }}>
-                            <div style={{ color: 'var(--ab-ink)', fontWeight: 600, marginBottom: 4 }}>{label}</div>
-                            {payload.map(p => (
-                              <div key={p.dataKey} style={{ color: p.color, fontWeight: 500 }}>{p.name}: {fmtCell(p.value)}</div>
-                            ))}
-                          </div>
-                        )
-                      }}
-                    />
-                    <Legend wrapperStyle={{ fontSize: 11 }} formatter={v => <span style={{ color: 'var(--ab-mut)' }}>{v}</span>} />
-                    {selected.map(({ e }, i) => (
-                      <Bar key={e.id} dataKey={`e${i}`} name={labelOf(e)} fill={SERIES[i]} radius={[4, 4, 0, 0]} maxBarSize={28} />
-                    ))}
-                  </BarChart>
-                </ResponsiveContainer>
-
-                <div className="table-wrap" style={{ marginTop: 16 }}>
-                  <table className="preview-table">
-                    <thead>
-                      <tr>
-                        <th>Algorithm</th>
-                        {selected.map(({ e }, i) => (
-                          <th key={e.id}><Dot color={SERIES[i]} />{labelOf(e)}</th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {matrix.map(r => (
-                        <tr key={r.name}>
-                          <td style={{ fontWeight: 600, color: 'var(--text)' }}>{r.name}</td>
-                          {r.vals.map((v, i) => {
-                            const isBest = r.best != null && v === r.best
-                            return (
-                              <td key={i} style={{
-                                fontFamily: 'var(--mono)', fontWeight: isBest ? 700 : 500,
-                                color: isBest ? 'var(--teal)' : v == null ? 'var(--text3)' : 'var(--text)',
-                              }}>
-                                {fmtCell(v)} {isBest && '✓'}
-                              </td>
-                            )
-                          })}
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </>
-          )}
-        </>
+                  <div className="ab-tw">
+                    <table className="ab-table">
+                      <thead><tr><th>Field</th>{chosen.map((r, i) => <th key={r.key}><span className="cmp-dot" style={{ background: COLORS[i] }} />{r.name}</th>)}</tr></thead>
+                      <tbody>
+                        {contextRows.length === 0 ? <tr><td colSpan={chosen.length + 1} className="ab-lbl" style={{ textAlign: 'center', padding: 20 }}>These runs share the same recorded configuration.</td></tr>
+                          : contextRows.map(([label, fn]) => (
+                            <tr key={label}>
+                              <td style={{ fontWeight: 600 }}>{label}{differs(fn) && <span className="ab-chip warn" style={{ marginLeft: 8 }}>differs</span>}</td>
+                              {chosen.map(r => <td key={r.key} className={fn(r) === 'Not recorded' ? 'ab-lbl' : ''}>{fn(r)}</td>)}
+                            </tr>
+                          ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </Card>
+              </motion.div>
+            )}
+          </div>
+        </div>
       )}
-    </div>
+    </Page>
   )
+}
+
+// useSearchParams must sit under a Suspense boundary
+export default function ComparePage() {
+  return <Suspense fallback={null}><Compare /></Suspense>
 }
